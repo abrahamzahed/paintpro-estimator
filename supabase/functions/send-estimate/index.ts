@@ -36,9 +36,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Create HTML content for the email
     const emailHtml = generateEstimateEmailHtml(estimateData, contactInfo);
     
-    // Send the email
+    // Send the email - using Resend's default testing domain
     const emailResponse = await resend.emails.send({
-      from: "Paint Pro Estimator <estimates@paintpro.app>",
+      from: "Paint Pro Estimator <onboarding@resend.dev>",
       to: [contactInfo.email],
       subject: `Your Paint Pro Estimate: ${contactInfo.projectName}`,
       html: emailHtml,
