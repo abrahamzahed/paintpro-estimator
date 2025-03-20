@@ -69,16 +69,16 @@ export const DesignStep: React.FC<DesignStepProps> = ({
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-8">
         <h3 className="text-xl font-semibold mb-4">Paint Cost Calculator</h3>
         
-        <Button 
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 mb-6"
-          onClick={onAddRoom}
-        >
-          <PaintBucket size={18} /> Add Room
-        </Button>
-        
         {rooms.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
             <p className="text-gray-500">No rooms added yet. Click "Add Room" to begin.</p>
+            
+            <Button 
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 mt-4"
+              onClick={onAddRoom}
+            >
+              <PaintBucket size={18} /> Add Room
+            </Button>
           </div>
         ) : (
           <div className="space-y-6">
@@ -91,6 +91,16 @@ export const DesignStep: React.FC<DesignStepProps> = ({
                 onDeleteRoom={onDeleteRoom}
               />
             ))}
+            
+            {/* Add Room button moved to the bottom */}
+            <div className="flex justify-center mt-6">
+              <Button 
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                onClick={onAddRoom}
+              >
+                <PaintBucket size={18} /> Add Room
+              </Button>
+            </div>
           </div>
         )}
       </div>

@@ -126,10 +126,10 @@ export const useEstimatorHook = () => {
       setIsLoading(true);
       console.log("Saving estimate...", { contactInfo, summary });
       
-      const { estimateData } = await saveEstimate(contactInfo, summary);
+      const { estimateData, leadData, projectData } = await saveEstimate(contactInfo, summary);
       
-      setEstimateSaved(true);
       setSavedEstimateId(estimateData.id);
+      setEstimateSaved(true);
       setIsLoading(false);
       toast.success('Estimate saved successfully!');
     } catch (error) {

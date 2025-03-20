@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Save, Mail, Loader2, CheckCircle } from 'lucide-react';
+import { Mail, Loader2, CheckCircle } from 'lucide-react';
 
 interface EstimateTotalsProps {
   subtotal: number;
@@ -52,23 +52,7 @@ export const EstimateTotals: React.FC<EstimateTotalsProps> = ({
       </div>
       
       <div className="flex flex-wrap gap-4 mt-8 justify-end">
-        {!estimateSaved ? (
-          <Button 
-            className="flex items-center gap-2"
-            onClick={onSaveEstimate}
-          >
-            <Save size={18} /> Save Estimate
-          </Button>
-        ) : (
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 text-green-600 border-green-600"
-            disabled
-          >
-            <CheckCircle size={18} /> Estimate Saved
-          </Button>
-        )}
-        
+        {/* Only show email button if saved */}
         {onSendEstimateEmail && estimateSaved && (
           emailSent ? (
             <Button 

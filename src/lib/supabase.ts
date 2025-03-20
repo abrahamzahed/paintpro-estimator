@@ -124,7 +124,25 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
   try {
     console.log("Saving estimate with data:", { contactInfo, summary });
     
-    // First save lead information
+    // First create a project and get the project ID
+    const { data: projectData, error: projectError } = await supabase
+      .from("projects")
+      .insert({
+        name: contactInfo.projectName,
+        guest_email: contactInfo.email,
+        description: `Paint project for ${contactInfo.address}`
+      })
+      .select()
+      .single();
+      
+    if (projectError) {
+      console.error("Error creating project:", projectError);
+      throw projectError;
+    }
+    
+    console.log("Project created successfully:", projectData);
+    
+    // Then save lead information with the project ID
     const { data: leadData, error: leadError } = await supabase
       .from("leads")
       .insert({
@@ -133,7 +151,9 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
         phone: contactInfo.phone,
         address: contactInfo.address,
         project_name: contactInfo.projectName,
-        created_at: new Date().toISOString() // Convert Date to ISO string
+        project_id: projectData.id,
+        details: JSON.stringify(summary.rooms),
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
@@ -150,13 +170,14 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
     const materialCost = summary.total * 0.3; // 30% of total as material cost
     const estimatedHours = Math.ceil(summary.total / 75); // $75 per hour
     
-    // Then save the estimate
+    // Then save the estimate with the lead ID and project ID
     const { data: estimateData, error: estimateError } = await supabase
       .from("estimates")
       .insert({
         lead_id: leadData.id,
+        project_id: projectData.id,
         project_name: contactInfo.projectName,
-        details: JSON.stringify(summary.rooms),
+        details: JSON.stringify(summary),
         subtotal: summary.subtotal,
         discount: summary.volumeDiscount,
         total_cost: summary.total,
@@ -164,7 +185,7 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
         material_cost: materialCost,
         estimated_hours: estimatedHours,
         status: "pending",
-        created_at: new Date().toISOString() // Convert Date to ISO string
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
@@ -176,7 +197,7 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
     
     console.log("Estimate saved successfully:", estimateData);
     
-    return { leadData, estimateData };
+    return { leadData, estimateData, projectData };
   } catch (error) {
     console.error('Error saving estimate:', error);
     throw error;
