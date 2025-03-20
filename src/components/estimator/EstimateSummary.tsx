@@ -65,7 +65,7 @@ export const EstimateSummary: React.FC<EstimateSummaryProps> = ({
               <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-3">
                 <div>
                   <p className="text-sm text-gray-600">Size:</p>
-                  <p>{room.size.name}</p>
+                  <p>{room.size.size}</p>
                 </div>
                 
                 <div>
