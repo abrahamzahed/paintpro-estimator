@@ -1,36 +1,40 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { ProgressStepItem } from './ProgressStepItem';
+import { Progress } from '@/components/ui/progress';
 
 interface ProgressStepsProps {
   currentStep: number;
 }
 
 export const ProgressSteps: React.FC<ProgressStepsProps> = ({ currentStep }) => {
+  const totalSteps = 3;
+  const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+  
+  const steps = [
+    { number: 1, label: 'Your Info' },
+    { number: 2, label: 'Estimate' },
+    { number: 3, label: 'Summary' }
+  ];
+  
   return (
-    <div className="flex items-center justify-center mb-8">
-      <div className={cn("step-item", currentStep >= 1 ? "active" : "", currentStep > 1 ? "complete" : "")}>
-        <div className="step">
-          {currentStep > 1 ? <Check size={16} /> : 1}
-        </div>
-        <p className="step-label">Your Info</p>
-      </div>
+    <div className="mb-8">
+      <Progress 
+        value={progressPercentage} 
+        className="h-2 mb-8 bg-gray-200" 
+        aria-label="Progress through estimator steps"
+      />
       
-      <div className="progress-connector mx-4 md:mx-10 lg:mx-16 md:w-32 lg:w-48"></div>
-      
-      <div className={cn("step-item", currentStep >= 2 ? "active" : "", currentStep > 2 ? "complete" : "")}>
-        <div className="step">
-          {currentStep > 2 ? <Check size={16} /> : 2}
-        </div>
-        <p className="step-label">Estimate</p>
-      </div>
-      
-      <div className="progress-connector mx-4 md:mx-10 lg:mx-16 md:w-32 lg:w-48"></div>
-      
-      <div className={cn("step-item", currentStep >= 3 ? "active" : "")}>
-        <div className="step">3</div>
-        <p className="step-label">Summary</p>
+      <div className="flex items-center justify-center">
+        {steps.map((step, index) => (
+          <ProgressStepItem
+            key={step.number}
+            stepNumber={step.number}
+            label={step.label}
+            currentStep={currentStep}
+            isLast={index === steps.length - 1}
+          />
+        ))}
       </div>
     </div>
   );
