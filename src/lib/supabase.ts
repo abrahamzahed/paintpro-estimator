@@ -122,6 +122,8 @@ export async function fetchPricingData(): Promise<PricingData> {
 
 export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) {
   try {
+    console.log("Saving estimate with data:", { contactInfo, summary });
+    
     // First save lead information
     const { data: leadData, error: leadError } = await supabase
       .from("leads")
@@ -136,7 +138,12 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
       .select()
       .single();
       
-    if (leadError) throw leadError;
+    if (leadError) {
+      console.error("Error saving lead:", leadError);
+      throw leadError;
+    }
+    
+    console.log("Lead saved successfully:", leadData);
     
     // Ensure we have valid labor_cost and material_cost - use default values if not specified
     const laborCost = summary.total * 0.7; // 70% of total as labor cost
@@ -162,7 +169,12 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
       .select()
       .single();
       
-    if (estimateError) throw estimateError;
+    if (estimateError) {
+      console.error("Error saving estimate:", estimateError);
+      throw estimateError;
+    }
+    
+    console.log("Estimate saved successfully:", estimateData);
     
     return { leadData, estimateData };
   } catch (error) {

@@ -21,12 +21,18 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { estimateData, contactInfo } = await req.json();
+    console.log("Received request to send estimate email");
+    const { estimateId, emailData } = await req.json();
     
-    if (!estimateData || !contactInfo) {
-      throw new Error("Missing required data: estimate data or contact info");
+    if (!emailData || !estimateId) {
+      throw new Error("Missing required data: estimate data or estimate ID");
     }
+    
+    const { estimateData, contactInfo } = emailData;
 
+    console.log("Estimate ID:", estimateId);
+    console.log("Contact Info:", contactInfo);
+    
     // Create HTML content for the email
     const emailHtml = generateEstimateEmailHtml(estimateData, contactInfo);
     
@@ -42,11 +48,11 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Log the email to the database
     const logResponse = await logEmailToDatabase(
-      estimateData.id || "unknown",
+      estimateId,
       contactInfo.email,
       `Your Paint Pro Estimate: ${contactInfo.projectName}`,
       'estimate-email',
-      { estimateId: estimateData.id }
+      { estimateId: estimateId }
     );
 
     return new Response(

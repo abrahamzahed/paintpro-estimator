@@ -9,7 +9,7 @@ import {
   SpecialCondition,
   Extra
 } from '@/types/estimator';
-import { fetchPricingData, saveEstimate } from '@/lib/supabase';
+import { fetchPricingData, saveEstimate, sendEstimateEmail } from '@/lib/supabase';
 import { validateContactInfo, validateRooms } from './validationUtils';
 import { saveEstimatorDataToStorage, loadRoomsFromStorage, loadContactInfoFromStorage, clearEstimatorStorage } from './persistenceUtils';
 import { createDefaultRoom } from './roomUtils';
@@ -49,6 +49,7 @@ export const useEstimatorHook = () => {
   const [extras, setExtras] = useState<Extra[]>([]);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [savedEstimateId, setSavedEstimateId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPricingData = async () => {
@@ -114,6 +115,7 @@ export const useEstimatorHook = () => {
       });
       setEstimateSaved(false);
       setEmailSent(false);
+      setSavedEstimateId(null);
       clearEstimatorStorage();
       toast.info('Estimate reset successfully');
     }
@@ -122,8 +124,12 @@ export const useEstimatorHook = () => {
   const handleSaveEstimate = async () => {
     try {
       setIsLoading(true);
-      await saveEstimate(contactInfo, summary);
+      console.log("Saving estimate...", { contactInfo, summary });
+      
+      const { estimateData } = await saveEstimate(contactInfo, summary);
+      
       setEstimateSaved(true);
+      setSavedEstimateId(estimateData.id);
       setIsLoading(false);
       toast.success('Estimate saved successfully!');
     } catch (error) {
@@ -142,16 +148,17 @@ export const useEstimatorHook = () => {
     try {
       setSendingEmail(true);
       
-      const { data, error } = await supabase.functions.invoke('send-estimate', {
-        body: {
-          estimateData: summary,
-          contactInfo: contactInfo,
-        },
-      });
+      const emailData = {
+        estimateData: summary,
+        contactInfo: contactInfo,
+      };
 
-      if (error) {
-        throw error;
+      // Check if we have a saved estimate ID
+      if (!savedEstimateId) {
+        throw new Error('Missing estimate ID. Please try saving the estimate again.');
       }
+      
+      const data = await sendEstimateEmail(savedEstimateId, emailData);
 
       setEmailSent(true);
       setSendingEmail(false);
@@ -175,6 +182,7 @@ export const useEstimatorHook = () => {
     extras,
     sendingEmail,
     emailSent,
+    savedEstimateId,
     setContactInfo,
     handleAddRoom,
     handleUpdateRoom,

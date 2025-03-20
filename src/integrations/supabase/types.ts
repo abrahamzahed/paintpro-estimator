@@ -72,6 +72,7 @@ export type Database = {
           project_name: string | null
           status: string | null
           status_type: string | null
+          subtotal: number | null
           total_cost: number
           updated_at: string
         }
@@ -90,6 +91,7 @@ export type Database = {
           project_name?: string | null
           status?: string | null
           status_type?: string | null
+          subtotal?: number | null
           total_cost: number
           updated_at?: string
         }
@@ -108,6 +110,7 @@ export type Database = {
           project_name?: string | null
           status?: string | null
           status_type?: string | null
+          subtotal?: number | null
           total_cost?: number
           updated_at?: string
         }
