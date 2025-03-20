@@ -1,105 +1,201 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContactInfo } from '@/types/estimator';
-import { mockProjects } from '@/lib/mockData';
+import AddressAutocomplete from './AddressAutocomplete';
+import { toast } from 'sonner';
 
 interface ContactFormProps {
   contactInfo: ContactInfo;
   setContactInfo: React.Dispatch<React.SetStateAction<ContactInfo>>;
 }
 
+// Email validation regex
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+// Phone validation regex (US format)
+const PHONE_REGEX = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+
 export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContactInfo }) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setContactInfo((prev) => ({ ...prev, [name]: value }));
+    
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const handleProjectChange = (value: string) => {
-    const isCreateNew = value === 'Create New Project';
-    setContactInfo((prev) => ({ 
-      ...prev, 
-      projectName: isCreateNew ? '' : value 
-    }));
+  const handleAddressChange = (value: string) => {
+    setContactInfo(prev => ({ ...prev, address: value }));
+    
+    // Clear error when user types
+    if (errors.address) {
+      setErrors(prev => ({ ...prev, address: '' }));
+    }
   };
+
+  const validateField = (name: string, value: string): string => {
+    if (!value.trim()) {
+      return `${name} is required`;
+    }
+    
+    if (name === 'email' && !EMAIL_REGEX.test(value)) {
+      return 'Please enter a valid email address';
+    }
+    
+    if (name === 'phone' && !PHONE_REGEX.test(value)) {
+      return 'Please enter a valid phone number (XXX-XXX-XXXX)';
+    }
+    
+    return '';
+  };
+
+  // Format phone number as user types
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    
+    let formattedValue = value;
+    if (value.length > 3 && value.length <= 6) {
+      formattedValue = `${value.slice(0, 3)}-${value.slice(3)}`;
+    } else if (value.length > 6) {
+      formattedValue = `${value.slice(0, 3)}-${value.slice(3, 6)}-${value.slice(6, 10)}`;
+    }
+    
+    setContactInfo(prev => ({ ...prev, phone: formattedValue }));
+    
+    // Clear error when user types
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: '' }));
+    }
+  };
+
+  // Validate all fields before form submission
+  const validateAllFields = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validate each field
+    const fields = [
+      { name: 'Project Name', key: 'projectName', value: contactInfo.projectName },
+      { name: 'Full Name', key: 'fullName', value: contactInfo.fullName },
+      { name: 'Email', key: 'email', value: contactInfo.email },
+      { name: 'Phone', key: 'phone', value: contactInfo.phone },
+      { name: 'Address', key: 'address', value: contactInfo.address }
+    ];
+    
+    fields.forEach(field => {
+      const error = validateField(field.name, field.value);
+      if (error) {
+        newErrors[field.key] = error;
+      }
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  React.useEffect(() => {
+    // Add form validation to the parent component
+    const originalNextStep = window.handleNextStep;
+    
+    if (typeof originalNextStep === 'function') {
+      window.handleNextStep = () => {
+        if (validateAllFields()) {
+          originalNextStep();
+        } else {
+          toast.error("Please correct the errors in the form");
+        }
+      };
+    }
+    
+    return () => {
+      window.handleNextStep = originalNextStep;
+    };
+  }, [contactInfo]);
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h3 className="text-lg font-medium mb-3">Select Project or Create New</h3>
-        <Select 
-          onValueChange={handleProjectChange}
-          defaultValue={mockProjects[0].name}
-        >
-          <SelectTrigger className="form-select">
-            <SelectValue placeholder="Select a project" />
-          </SelectTrigger>
-          <SelectContent>
-            {mockProjects.map((project) => (
-              <SelectItem key={project.id} value={project.name}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="form-input-wrapper">
+        <Label htmlFor="projectName" className="form-label after:content-['*'] after:ml-0.5 after:text-red-500">
+          Project Name
+        </Label>
+        <Input
+          id="projectName"
+          name="projectName"
+          className={`form-input ${errors.projectName ? 'border-red-500' : ''}`}
+          value={contactInfo.projectName}
+          onChange={handleChange}
+          placeholder="Enter your project name"
+        />
+        {errors.projectName && (
+          <p className="text-red-500 text-sm mt-1">{errors.projectName}</p>
+        )}
       </div>
 
       <div className="form-input-wrapper">
-        <Label htmlFor="fullName" className="form-label">
+        <Label htmlFor="fullName" className="form-label after:content-['*'] after:ml-0.5 after:text-red-500">
           Full Name
         </Label>
         <Input
           id="fullName"
           name="fullName"
-          className="form-input"
+          className={`form-input ${errors.fullName ? 'border-red-500' : ''}`}
           value={contactInfo.fullName}
           onChange={handleChange}
           placeholder="Enter your full name"
         />
+        {errors.fullName && (
+          <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+        )}
       </div>
 
       <div className="form-input-wrapper">
-        <Label htmlFor="email" className="form-label">
+        <Label htmlFor="email" className="form-label after:content-['*'] after:ml-0.5 after:text-red-500">
           Email Address
         </Label>
         <Input
           id="email"
           name="email"
           type="email"
-          className="form-input"
+          className={`form-input ${errors.email ? 'border-red-500' : ''}`}
           value={contactInfo.email}
           onChange={handleChange}
           placeholder="Enter your email address"
         />
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+        )}
       </div>
 
       <div className="form-input-wrapper">
-        <Label htmlFor="phone" className="form-label">
+        <Label htmlFor="phone" className="form-label after:content-['*'] after:ml-0.5 after:text-red-500">
           Phone Number
         </Label>
         <Input
           id="phone"
           name="phone"
-          className="form-input"
+          className={`form-input ${errors.phone ? 'border-red-500' : ''}`}
           value={contactInfo.phone}
-          onChange={handleChange}
-          placeholder="Enter your phone number"
+          onChange={handlePhoneChange}
+          placeholder="XXX-XXX-XXXX"
         />
+        {errors.phone && (
+          <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+        )}
       </div>
 
       <div className="form-input-wrapper">
-        <Label htmlFor="address" className="form-label">
-          Address <span className="text-red-500">*</span>
-        </Label>
-        <Input
+        <AddressAutocomplete
           id="address"
-          name="address"
-          className="form-input"
           value={contactInfo.address}
-          onChange={handleChange}
+          onChange={handleAddressChange}
+          label="Address"
           placeholder="Enter your full address"
+          required={true}
+          error={errors.address}
         />
       </div>
     </div>

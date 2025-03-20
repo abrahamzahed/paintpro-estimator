@@ -10,6 +10,13 @@ import {
 } from '@/types/estimator';
 import { fetchPricingData } from '@/lib/mockData';
 
+// Add this to the global Window interface
+declare global {
+  interface Window {
+    handleNextStep?: () => void;
+  }
+}
+
 export const useEstimator = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
@@ -136,10 +143,16 @@ export const useEstimator = () => {
   };
 
   const handleNextStep = () => {
-    // Validate current step
+    // This function can be overridden by the ContactForm component
+    if (window.handleNextStep) {
+      window.handleNextStep();
+      return;
+    }
+    
+    // Default validation for step 1 (fallback)
     if (currentStep === 1) {
       // Validate contact info
-      if (!contactInfo.fullName || !contactInfo.email || !contactInfo.phone || !contactInfo.address) {
+      if (!contactInfo.projectName || !contactInfo.fullName || !contactInfo.email || !contactInfo.phone || !contactInfo.address) {
         toast.error('Please fill in all required fields');
         return;
       }

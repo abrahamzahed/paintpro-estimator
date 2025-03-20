@@ -25,15 +25,20 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({ currentStep }) => 
         aria-label="Progress through estimator steps"
       />
       
-      <div className="flex items-center justify-center">
+      <div className="flex justify-between items-center">
         {steps.map((step, index) => (
-          <ProgressStepItem
-            key={step.number}
-            stepNumber={step.number}
-            label={step.label}
-            currentStep={currentStep}
-            isLast={index === steps.length - 1}
-          />
+          <div key={step.number} className="flex items-center">
+            <ProgressStepItem
+              stepNumber={step.number}
+              label={step.label}
+              currentStep={currentStep}
+              isLast={index === steps.length - 1}
+            />
+            
+            {index < steps.length - 1 && (
+              <div className={`h-[2px] w-24 md:w-48 mx-2 ${currentStep > step.number ? "bg-blue-600" : "bg-gray-200"}`}></div>
+            )}
+          </div>
         ))}
       </div>
     </div>

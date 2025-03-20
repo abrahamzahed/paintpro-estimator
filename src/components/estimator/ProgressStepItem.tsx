@@ -16,21 +16,22 @@ export const ProgressStepItem: React.FC<ProgressStepItemProps> = ({
   currentStep,
   isLast = false
 }) => {
-  const isActive = currentStep >= stepNumber;
+  const isActive = currentStep === stepNumber;
   const isComplete = currentStep > stepNumber;
   
   return (
-    <>
-      <div className={cn("step-item", isActive ? "active" : "", isComplete ? "complete" : "")}>
-        <div className="step">
-          {isComplete ? <Check size={16} /> : stepNumber}
-        </div>
-        <p className="step-label">{label}</p>
+    <div className="text-center">
+      <div 
+        className={cn(
+          "w-10 h-10 flex items-center justify-center rounded-full border-2 mx-auto mb-2",
+          isActive ? "bg-blue-600 border-blue-600 text-white" : "",
+          isComplete ? "bg-blue-600 border-blue-600 text-white" : "",
+          !isActive && !isComplete ? "border-blue-600 text-blue-600" : ""
+        )}
+      >
+        {isComplete ? <Check size={20} /> : stepNumber}
       </div>
-      
-      {!isLast && (
-        <div className="progress-connector mx-4 md:mx-10 lg:mx-16 md:w-32 lg:w-48"></div>
-      )}
-    </>
+      <p className="text-sm font-medium">{label}</p>
+    </div>
   );
 };
