@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { 
   Select, 
@@ -20,7 +21,7 @@ const mockRepairOptions = [
   { id: 3, name: 'Major Repairs', cost: 750 }
 ];
 
-// Updated fireplace options
+// Updated fireplace options as requested
 const mockFireplaceOptions = [
   { id: 1, name: 'None', cost: 0 },
   { id: 2, name: 'Brush Mantel', cost: 100 },
@@ -72,7 +73,6 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
   // Check if millwork priming should be disabled 
   const shouldDisableMillworkPriming = () => {
     // Only disable if ALL millwork elements are missing 
-    // (changed from OR to AND conditions)
     return (
       localRoom.baseboardType === 'No Baseboards' && 
       localRoom.doors.count === 0 && 
@@ -118,11 +118,8 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
     const basePrice = localRoom.size.base_price;
     const priceDetails: Record<string, number> = { basePrice };
     
-    // Paint type upcharge
-    const paintUpchargeAmount = localRoom.paintType.upcharge_amount;
-    const paintUpchargePercentage = (basePrice * localRoom.paintType.upcharge_percentage) / 100;
-    const paintUpcharge = Math.max(paintUpchargeAmount, paintUpchargePercentage);
-    priceDetails.paintUpcharge = paintUpcharge;
+    // Calculate subtotal without paint upcharge first
+    let roomSubtotal = basePrice;
     
     // Baseboard upcharge
     let baseboardUpchargePercentage = 0;
@@ -133,61 +130,62 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
     }
     const baseboardUpcharge = (basePrice * baseboardUpchargePercentage) / 100;
     priceDetails.baseboardUpcharge = baseboardUpcharge;
+    roomSubtotal += baseboardUpcharge;
     
     // High ceiling
     if (localRoom.options.highCeiling) {
       priceDetails.highCeiling = 600;
+      roomSubtotal += 600;
     }
     
     // Two colors
     if (localRoom.options.twoColors) {
-      priceDetails.twoColors = (basePrice * 0.1);
+      const twoColorsUpcharge = basePrice * 0.1;
+      priceDetails.twoColors = twoColorsUpcharge;
+      roomSubtotal += twoColorsUpcharge;
     }
     
     // Millwork priming
     if (localRoom.options.millworkPriming) {
-      priceDetails.millworkPriming = (basePrice * 0.5);
+      const millworkPrimingUpcharge = basePrice * 0.5;
+      priceDetails.millworkPriming = millworkPrimingUpcharge;
+      roomSubtotal += millworkPrimingUpcharge;
     }
     
     // Closets
     const regularClosetPrice = localRoom.closets.regularCount * 150;
     const walkInClosetPrice = localRoom.closets.walkInCount * 300;
-    priceDetails.closets = regularClosetPrice + walkInClosetPrice;
+    const closetsTotal = regularClosetPrice + walkInClosetPrice;
+    if (closetsTotal > 0) {
+      priceDetails.closets = closetsTotal;
+      roomSubtotal += closetsTotal;
+    }
     
     // Fireplace
     const fireplaceOption = mockFireplaceOptions.find(f => f.name === localRoom.fireplace);
     if (fireplaceOption && fireplaceOption.cost > 0) {
       priceDetails.fireplace = fireplaceOption.cost;
+      roomSubtotal += fireplaceOption.cost;
     }
     
     // Stair railing
     if (localRoom.options.stairRailing) {
       priceDetails.stairRailing = 250;
+      roomSubtotal += 250;
     }
     
     // Repairs
     const repairOption = mockRepairOptions.find(r => r.name === localRoom.repairs);
     if (repairOption && repairOption.cost > 0) {
       priceDetails.repairs = repairOption.cost;
+      roomSubtotal += repairOption.cost;
     }
     
     // Baseboard installation
     if (localRoom.baseboardInstallationFeet > 0) {
-      priceDetails.baseboardInstall = localRoom.baseboardInstallationFeet * 2;
-    }
-    
-    // Calculate subtotal before discounts
-    let subtotal = Object.values(priceDetails).reduce((sum, value) => sum + value, 0);
-    
-    // Apply discounts
-    if (localRoom.options.emptyRoom) {
-      const emptyRoomDiscount = subtotal * 0.15;
-      priceDetails.emptyRoomDiscount = -emptyRoomDiscount;
-    }
-    
-    if (localRoom.options.noFloorCovering) {
-      const noFloorDiscount = subtotal * 0.05;
-      priceDetails.noFloorCoveringDiscount = -noFloorDiscount;
+      const baseboardInstallCost = localRoom.baseboardInstallationFeet * 2;
+      priceDetails.baseboardInstall = baseboardInstallCost;
+      roomSubtotal += baseboardInstallCost;
     }
     
     // Apply room-specific add-ons from Supabase
@@ -196,15 +194,43 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
         const addonCost = addon.cost_percentage ? 
           basePrice * (addon.cost_percentage / 100) : addon.cost;
         priceDetails[addon.name] = addonCost;
+        roomSubtotal += addonCost;
       }
     });
     
-    // Calculate final price
-    const totalPrice = Object.values(priceDetails).reduce((sum, value) => sum + value, 0);
+    // Now apply the paint type upcharge to the total room cost
+    // Formula: total cost of the room + (total cost of room * percentage_upcharge) + fixed_upcharge
+    const paintUpchargePercentage = localRoom.paintType.upcharge_percentage || 0;
+    const paintUpchargeAmount = localRoom.paintType.upcharge_amount || 0;
     
+    // Calculate the percentage-based upcharge
+    const percentageUpcharge = (roomSubtotal * paintUpchargePercentage) / 100;
+    
+    // Add both the percentage and fixed upcharges
+    const totalPaintUpcharge = percentageUpcharge + paintUpchargeAmount;
+    
+    if (totalPaintUpcharge > 0) {
+      priceDetails.paintUpcharge = totalPaintUpcharge;
+      roomSubtotal += totalPaintUpcharge;
+    }
+    
+    // Apply discounts
+    if (localRoom.options.emptyRoom) {
+      const emptyRoomDiscount = roomSubtotal * 0.15;
+      priceDetails.emptyRoomDiscount = -emptyRoomDiscount;
+      roomSubtotal -= emptyRoomDiscount;
+    }
+    
+    if (localRoom.options.noFloorCovering) {
+      const noFloorDiscount = roomSubtotal * 0.05;
+      priceDetails.noFloorCoveringDiscount = -noFloorDiscount;
+      roomSubtotal -= noFloorDiscount;
+    }
+    
+    // Set the final price
     setLocalRoom(prev => ({
       ...prev,
-      price: parseFloat(totalPrice.toFixed(2)),
+      price: parseFloat(roomSubtotal.toFixed(2)),
       priceDetails,
     }));
   };
@@ -677,7 +703,7 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
                 if (key === 'stairRailing') return 'Stair Railing';
                 if (key === 'repairs') return 'Repairs';
                 if (key === 'baseboardInstall') return 'Baseboard Install';
-                if (key === 'emptyRoomDiscount') return 'Empty House Discount';
+                if (key === 'emptyRoomDiscount') return 'Empty Room Discount';
                 if (key === 'noFloorCoveringDiscount') return 'No Floor Covering Discount';
                 
                 return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());

@@ -53,7 +53,7 @@ export const useEstimator = () => {
       try {
         const data = await fetchPricingData();
         
-        // Add "Own Paint/ No Paint" option to paint types
+        // Add "Own Paint/ No Paint" option to paint types if not already there
         const ownPaintOption: PaintType = {
           id: 'own-paint',
           name: 'Own Paint/ No Paint',
@@ -289,8 +289,13 @@ export const useEstimator = () => {
     extras,
     setContactInfo,
     handleAddRoom,
-    handleUpdateRoom,
-    handleDeleteRoom,
+    handleUpdateRoom: (updatedRoom: RoomDetail) => {
+      setRooms(rooms.map((room) => (room.id === updatedRoom.id ? updatedRoom : room)));
+    },
+    handleDeleteRoom: (roomId: string) => {
+      setRooms(rooms.filter((room) => room.id !== roomId));
+      toast.success('Room removed successfully');
+    },
     handleNextStep,
     handlePreviousStep,
     handleReset,

@@ -59,11 +59,12 @@ export async function fetchPricingData(): Promise<PricingData> {
       created_at: rs.created_at
     }));
     
+    // Updated to handle null values correctly for paint types
     const paintTypes: PaintType[] = paintTypesRes.data.map(pt => ({
       id: pt.id,
       name: pt.name,
-      upcharge_percentage: pt.percentage_upcharge || 0,
-      upcharge_amount: pt.fixed_upcharge || 0,
+      upcharge_percentage: pt.percentage_upcharge || 0, // If null, default to 0
+      upcharge_amount: pt.fixed_upcharge || 0, // If null, default to 0
       description: pt.description || undefined,
       created_at: pt.created_at
     }));
