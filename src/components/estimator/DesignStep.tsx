@@ -11,7 +11,7 @@ interface DesignStepProps {
   pricingData: PricingData;
   onUpdateRoom: (room: RoomDetail) => void;
   onDeleteRoom: (roomId: string) => void;
-  onAddRoom: () => void;
+  onAddRoom: (room?: RoomDetail) => void; // Updated to make the parameter optional
   onReset: () => void;
   onPreviousStep: () => void;
 }
@@ -75,7 +75,7 @@ export const DesignStep: React.FC<DesignStepProps> = ({
             
             <Button 
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 mt-4"
-              onClick={onAddRoom}
+              onClick={() => onAddRoom()} // Call without arguments
             >
               <PaintBucket size={18} /> Add Room
             </Button>
@@ -96,7 +96,7 @@ export const DesignStep: React.FC<DesignStepProps> = ({
             <div className="flex justify-center mt-6">
               <Button 
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                onClick={onAddRoom}
+                onClick={() => onAddRoom()} // Call without arguments
               >
                 <PaintBucket size={18} /> Add Room
               </Button>

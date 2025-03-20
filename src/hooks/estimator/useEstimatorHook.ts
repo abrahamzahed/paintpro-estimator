@@ -88,15 +88,15 @@ export const useEstimatorHook = () => {
     }
   }, [rooms, contactInfo, pricingData]);
 
-  // Modified useRoomManagement hook to track modifications
+  // Modified roomManagement hook to track modifications
   const roomManagement = useRoomManagement({
     rooms,
     setRooms,
     pricingData
   });
 
-  // Override the original methods to track changes
-  const handleAddRoom = (room: RoomDetail) => {
+  // Make sure handleAddRoom can work both with and without a parameter
+  const handleAddRoom = (room?: RoomDetail) => {
     roomManagement.handleAddRoom(room);
     setRoomsModified(true);
     setEstimateSaved(false);

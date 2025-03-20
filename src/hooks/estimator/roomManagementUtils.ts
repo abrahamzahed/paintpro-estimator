@@ -15,10 +15,12 @@ export const useRoomManagement = ({
   pricingData
 }: RoomManagementProps) => {
   
-  const handleAddRoom = () => {
+  // Updated to support both with and without argument
+  const handleAddRoom = (room?: RoomDetail) => {
     if (!pricingData) return;
     
-    const newRoom = createDefaultRoom(pricingData);
+    // If a room is provided, use it; otherwise create a new default room
+    const newRoom = room || createDefaultRoom(pricingData);
     if (newRoom) {
       setRooms([...rooms, newRoom]);
     }
