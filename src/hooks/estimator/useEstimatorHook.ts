@@ -16,6 +16,7 @@ import { createDefaultRoom } from './roomUtils';
 import { calculateEstimatorSummary } from './summaryUtils';
 import { processPricingData } from './paintUtils';
 import { handleEstimatorSteps } from './navigationUtils';
+import { useRoomManagement } from './roomManagementUtils';
 
 // Add this to the global Window interface
 declare global {
@@ -86,23 +87,12 @@ export const useEstimatorHook = () => {
     }
   }, [rooms, contactInfo, pricingData]);
 
-  const handleAddRoom = () => {
-    if (!pricingData) return;
-    
-    const newRoom = createDefaultRoom(pricingData);
-    if (newRoom) {
-      setRooms([...rooms, newRoom]);
-    }
-  };
-
-  const handleUpdateRoom = (updatedRoom: RoomDetail) => {
-    setRooms(rooms.map((room) => (room.id === updatedRoom.id ? updatedRoom : room)));
-  };
-
-  const handleDeleteRoom = (roomId: string) => {
-    setRooms(rooms.filter((room) => room.id !== roomId));
-    toast.success('Room removed successfully');
-  };
+  // Get room management functions from the new utility
+  const { handleAddRoom, handleUpdateRoom, handleDeleteRoom } = useRoomManagement({
+    rooms,
+    setRooms,
+    pricingData
+  });
 
   const { handleNextStep, handlePreviousStep } = handleEstimatorSteps({
     currentStep,
