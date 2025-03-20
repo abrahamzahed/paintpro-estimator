@@ -18,6 +18,8 @@ const Estimator = () => {
     pricingData,
     isLoading,
     estimateSaved,
+    sendingEmail,
+    emailSent,
     setContactInfo,
     handleAddRoom,
     handleUpdateRoom,
@@ -25,7 +27,8 @@ const Estimator = () => {
     handleNextStep,
     handlePreviousStep,
     handleReset,
-    handleSaveEstimate
+    handleSaveEstimate,
+    handleSendEstimateEmail
   } = useEstimator();
 
   if (isLoading) {
@@ -66,7 +69,10 @@ const Estimator = () => {
             <SummaryStep 
               summary={summary}
               estimateSaved={estimateSaved}
+              sendingEmail={sendingEmail}
+              emailSent={emailSent}
               onSaveEstimate={handleSaveEstimate}
+              onSendEstimateEmail={handleSendEstimateEmail}
             />
           )}
         </div>
