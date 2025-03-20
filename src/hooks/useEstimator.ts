@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { 
   EstimatorSummary, 
@@ -8,14 +7,14 @@ import {
   ContactInfo, 
   PricingData,
   SpecialCondition,
-  Extra,
-  BaseboardType,
-  PaintType
+  Extra
 } from '@/types/estimator';
 import { fetchPricingData, saveEstimate } from '@/lib/supabase';
-
-// Email validation regex
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+import { validateContactInfo, validateRooms } from './estimator/validationUtils';
+import { saveEstimatorDataToStorage, loadRoomsFromStorage, loadContactInfoFromStorage, clearEstimatorStorage } from './estimator/persistenceUtils';
+import { createDefaultRoom } from './estimator/roomUtils';
+import { calculateEstimatorSummary } from './estimator/summaryUtils';
+import { processPricingData } from './estimator/paintUtils';
 
 // Add this to the global Window interface
 declare global {
@@ -53,21 +52,10 @@ export const useEstimator = () => {
       try {
         const data = await fetchPricingData();
         
-        // Add "Own Paint/ No Paint" option to paint types if not already there
-        const ownPaintOption: PaintType = {
-          id: 'own-paint',
-          name: 'Own Paint/ No Paint',
-          upcharge_percentage: 0,
-          upcharge_amount: 0,
-          description: 'Customer will provide their own paint'
-        };
+        // Process pricing data to ensure all required options are present
+        const processedData = processPricingData(data);
         
-        // Make sure we don't add it if it already exists
-        if (!data.paintTypes.some(p => p.name === 'Own Paint/ No Paint')) {
-          data.paintTypes = [ownPaintOption, ...data.paintTypes];
-        }
-        
-        setPricingData(data);
+        setPricingData(processedData);
         
         // Set specialized data
         if (data.specialConditions) {
@@ -89,102 +77,21 @@ export const useEstimator = () => {
     loadPricingData();
   }, []);
 
-  // Calculate summary whenever rooms change
+  // Calculate summary whenever rooms or contact info change
   useEffect(() => {
-    if (rooms.length > 0 && pricingData) {
-      const subtotal = rooms.reduce((total, room) => total + room.price, 0);
-      
-      // Calculate volume discount
-      let volumeDiscountPercentage = 0;
-      for (let i = pricingData.volumeDiscounts.length - 1; i >= 0; i--) {
-        if (subtotal >= pricingData.volumeDiscounts[i].threshold) {
-          volumeDiscountPercentage = pricingData.volumeDiscounts[i].discount_percentage;
-          break;
-        }
-      }
-      
-      const volumeDiscount = (subtotal * volumeDiscountPercentage) / 100;
-      const total = subtotal - volumeDiscount;
-      
-      setSummary({
-        subtotal,
-        volumeDiscount,
-        total,
-        rooms,
-        contactInfo,
-      });
-    } else {
-      setSummary({
-        subtotal: 0,
-        volumeDiscount: 0,
-        total: 0,
-        rooms: [],
-        contactInfo,
-      });
+    if (pricingData) {
+      const updatedSummary = calculateEstimatorSummary(rooms, contactInfo, pricingData);
+      setSummary(updatedSummary);
     }
   }, [rooms, contactInfo, pricingData]);
 
   const handleAddRoom = () => {
-    if (!pricingData || pricingData.roomTypes.length === 0 || pricingData.roomSizes.length === 0 || pricingData.paintTypes.length === 0) {
-      return;
+    if (!pricingData) return;
+    
+    const newRoom = createDefaultRoom(pricingData);
+    if (newRoom) {
+      setRooms([...rooms, newRoom]);
     }
-    
-    // Get the first room type from pricing data
-    const defaultRoomType = pricingData.roomTypes[0];
-    
-    // Get sizes for this room type
-    const sizesForRoomType = pricingData.roomSizes.filter(
-      size => size.room_type_id === defaultRoomType.id
-    );
-    
-    // Select the average size (middle element) for better default experience
-    const middleIndex = Math.floor(sizesForRoomType.length / 2);
-    const defaultSize = sizesForRoomType.length > 0 
-      ? sizesForRoomType[middleIndex] 
-      : pricingData.roomSizes[0];
-    
-    // Find "Own Paint/ No Paint" or use the first paint type
-    const ownPaintType = pricingData.paintTypes.find(p => p.name === 'Own Paint/ No Paint');
-    const defaultPaintType = ownPaintType || pricingData.paintTypes[0];
-    
-    const newRoom: RoomDetail = {
-      id: uuidv4(),
-      name: `${defaultRoomType.name}`,
-      roomType: defaultRoomType,
-      size: defaultSize,
-      paintType: defaultPaintType,
-      baseboardType: 'No Baseboards', // Default to "No Baseboards" 
-      options: {
-        emptyRoom: false,
-        noFloorCovering: false,
-        twoColors: false,
-        millworkPriming: false, // This will be disabled by default
-        highCeiling: false,
-        paintCeiling: false,
-        stairRailing: false,
-      },
-      doors: {
-        count: 0,
-        paintMethod: 'Spray',
-      },
-      windows: {
-        count: 0,
-        paintMethod: 'Spray',
-      },
-      closets: {
-        walkInCount: 0,
-        regularCount: 0,
-      },
-      fireplace: 'None', // Default to "None"
-      repairs: 'No Repairs',
-      baseboardInstallationFeet: 0,
-      price: defaultSize.base_price,
-      priceDetails: {
-        basePrice: defaultSize.base_price,
-      },
-    };
-    
-    setRooms([...rooms, newRoom]);
   };
 
   const handleUpdateRoom = (updatedRoom: RoomDetail) => {
@@ -206,27 +113,30 @@ export const useEstimator = () => {
     // Default validation for step 1 (fallback)
     if (currentStep === 1) {
       // Validate contact info
-      if (!contactInfo.projectName || !contactInfo.fullName || !contactInfo.email || !contactInfo.phone || !contactInfo.address) {
-        toast.error('Please fill in all required fields');
-        return;
-      }
+      const validation = validateContactInfo(
+        contactInfo.fullName,
+        contactInfo.email,
+        contactInfo.phone,
+        contactInfo.address,
+        contactInfo.projectName
+      );
       
-      // Validate email format
-      if (!EMAIL_REGEX.test(contactInfo.email)) {
-        toast.error('Please enter a valid email address');
+      if (!validation.isValid && validation.errorMessage) {
+        toast.error(validation.errorMessage);
         return;
       }
     } else if (currentStep === 2) {
       // Validate that there's at least one room
-      if (rooms.length === 0) {
-        toast.error('Please add at least one room');
+      const validation = validateRooms(rooms.length);
+      
+      if (!validation.isValid && validation.errorMessage) {
+        toast.error(validation.errorMessage);
         return;
       }
     }
     
     // Store the current rooms and selections in localStorage for persistence
-    localStorage.setItem('estimator-rooms', JSON.stringify(rooms));
-    localStorage.setItem('estimator-contact', JSON.stringify(contactInfo));
+    saveEstimatorDataToStorage(rooms, contactInfo);
     
     setCurrentStep(currentStep + 1);
     window.scrollTo(0, 0);
@@ -235,9 +145,9 @@ export const useEstimator = () => {
   const handlePreviousStep = () => {
     // When going back from step 3 to step 2, make sure to load all rooms from storage
     if (currentStep === 3) {
-      const storedRooms = localStorage.getItem('estimator-rooms');
+      const storedRooms = loadRoomsFromStorage();
       if (storedRooms) {
-        setRooms(JSON.parse(storedRooms));
+        setRooms(storedRooms);
       }
     }
     
@@ -257,8 +167,7 @@ export const useEstimator = () => {
         projectName: '',
       });
       setEstimateSaved(false);
-      localStorage.removeItem('estimator-rooms');
-      localStorage.removeItem('estimator-contact');
+      clearEstimatorStorage();
       toast.info('Estimate reset successfully');
     }
   };
@@ -289,13 +198,8 @@ export const useEstimator = () => {
     extras,
     setContactInfo,
     handleAddRoom,
-    handleUpdateRoom: (updatedRoom: RoomDetail) => {
-      setRooms(rooms.map((room) => (room.id === updatedRoom.id ? updatedRoom : room)));
-    },
-    handleDeleteRoom: (roomId: string) => {
-      setRooms(rooms.filter((room) => room.id !== roomId));
-      toast.success('Room removed successfully');
-    },
+    handleUpdateRoom,
+    handleDeleteRoom,
     handleNextStep,
     handlePreviousStep,
     handleReset,
