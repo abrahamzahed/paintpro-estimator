@@ -10,6 +10,9 @@ import {
 } from '@/types/estimator';
 import { fetchPricingData } from '@/lib/mockData';
 
+// Email validation regex
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 // Add this to the global Window interface
 declare global {
   interface Window {
@@ -154,6 +157,12 @@ export const useEstimator = () => {
       // Validate contact info
       if (!contactInfo.projectName || !contactInfo.fullName || !contactInfo.email || !contactInfo.phone || !contactInfo.address) {
         toast.error('Please fill in all required fields');
+        return;
+      }
+      
+      // Validate email format
+      if (!EMAIL_REGEX.test(contactInfo.email)) {
+        toast.error('Please enter a valid email address');
         return;
       }
     } else if (currentStep === 2) {

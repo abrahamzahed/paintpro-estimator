@@ -43,11 +43,11 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
       return `${name} is required`;
     }
     
-    if (name === 'email' && !EMAIL_REGEX.test(value)) {
+    if (name === 'Email' && !EMAIL_REGEX.test(value)) {
       return 'Please enter a valid email address';
     }
     
-    if (name === 'phone' && !PHONE_REGEX.test(value)) {
+    if (name === 'Phone' && !PHONE_REGEX.test(value)) {
       return 'Please enter a valid phone number (XXX-XXX-XXXX)';
     }
     
@@ -80,10 +80,10 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
     // Validate each field
     const fields = [
       { name: 'Project Name', key: 'projectName', value: contactInfo.projectName },
+      { name: 'Address', key: 'address', value: contactInfo.address },
       { name: 'Full Name', key: 'fullName', value: contactInfo.fullName },
       { name: 'Email', key: 'email', value: contactInfo.email },
-      { name: 'Phone', key: 'phone', value: contactInfo.phone },
-      { name: 'Address', key: 'address', value: contactInfo.address }
+      { name: 'Phone', key: 'phone', value: contactInfo.phone }
     ];
     
     fields.forEach(field => {
@@ -136,6 +136,18 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
       </div>
 
       <div className="form-input-wrapper">
+        <AddressAutocomplete
+          id="address"
+          value={contactInfo.address}
+          onChange={handleAddressChange}
+          label="Address"
+          placeholder="Enter your full address"
+          required={true}
+          error={errors.address}
+        />
+      </div>
+
+      <div className="form-input-wrapper">
         <Label htmlFor="fullName" className="form-label after:content-['*'] after:ml-0.5 after:text-red-500">
           Full Name
         </Label>
@@ -185,18 +197,6 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
         {errors.phone && (
           <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
         )}
-      </div>
-
-      <div className="form-input-wrapper">
-        <AddressAutocomplete
-          id="address"
-          value={contactInfo.address}
-          onChange={handleAddressChange}
-          label="Address"
-          placeholder="Enter your full address"
-          required={true}
-          error={errors.address}
-        />
       </div>
     </div>
   );
