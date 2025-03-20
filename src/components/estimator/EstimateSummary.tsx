@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Save, RefreshCw, LayoutDashboard, Home, CheckCircle } from 'lucide-react';
+import { Save, RefreshCw, CheckCircle } from 'lucide-react';
 import { EstimatorSummary } from '@/types/estimator';
 
 interface EstimateSummaryProps {
@@ -25,7 +25,7 @@ export const EstimateSummary: React.FC<EstimateSummaryProps> = ({
             <CheckCircle size={64} className="text-green-500" />
           </div>
           <h2 className="text-2xl font-bold">Estimate Saved!</h2>
-          <p className="text-gray-600 mt-1">Your estimate has been saved to your account.</p>
+          <p className="text-gray-600 mt-1">Your estimate has been saved successfully.</p>
         </div>
       ) : null}
       
@@ -221,26 +221,13 @@ export const EstimateSummary: React.FC<EstimateSummaryProps> = ({
       </div>
       
       {estimateSaved && (
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-8 flex justify-center">
           <Button 
             variant="outline" 
             className="inline-flex items-center gap-2"
+            onClick={() => window.location.reload()}
           >
-            <RefreshCw size={18} /> Reset
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="inline-flex items-center gap-2"
-          >
-            <LayoutDashboard size={18} /> Go to Dashboard
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="inline-flex items-center gap-2"
-          >
-            <Home size={18} /> Return Home
+            <RefreshCw size={18} /> Create New Estimate
           </Button>
         </div>
       )}

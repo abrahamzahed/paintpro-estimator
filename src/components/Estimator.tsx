@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -26,7 +25,7 @@ import {
 } from '@/types/estimator';
 import { fetchPricingData } from '@/lib/mockData';
 
-const FreeEstimator = () => {
+const Estimator = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     fullName: '',
@@ -174,6 +173,7 @@ const FreeEstimator = () => {
   const handlePreviousStep = () => {
     setCurrentStep(currentStep - 1);
     window.scrollTo(0, 0);
+    
   };
 
   const handleReset = () => {
@@ -217,8 +217,9 @@ const FreeEstimator = () => {
 
   return (
     <div className="max-w-5xl mx-auto my-8 px-4 animate-fade-in">
-      <div className="text-left mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Create New Estimate</h1>
+      <div className="text-left mb-6 flex items-center">
+        <PaintBucket size={28} className="text-blue-600 mr-2" />
+        <h1 className="text-3xl font-bold text-gray-900">Paint Pro Estimator</h1>
       </div>
       
       <div className="container-card overflow-hidden">
@@ -230,15 +231,6 @@ const FreeEstimator = () => {
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Let's Get Started</h2>
                 <p className="text-gray-600 mt-1">Please provide your contact information.</p>
-              </div>
-              
-              <div className="flex gap-3 mb-8">
-                <Button variant="outline" className="inline-flex items-center gap-2">
-                  <LayoutDashboard size={18} /> Dashboard
-                </Button>
-                <Button variant="outline" className="inline-flex items-center gap-2">
-                  <Home size={18} /> Return Home
-                </Button>
               </div>
               
               <ContactForm 
@@ -307,7 +299,7 @@ const FreeEstimator = () => {
             <div className="animate-fade-in">
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Your Estimate Summary</h2>
-                <p className="text-gray-600 mt-1">Review your estimate and create an account to save it.</p>
+                <p className="text-gray-600 mt-1">Review your estimate and save it.</p>
               </div>
               
               <EstimateSummary 
@@ -359,8 +351,12 @@ const FreeEstimator = () => {
           )}
         </div>
       </div>
+      
+      <div className="text-center text-gray-500 text-sm mt-8">
+        © {new Date().getFullYear()} Paint Pro. All rights reserved.
+      </div>
     </div>
   );
 };
 
-export default FreeEstimator;
+export default Estimator;
