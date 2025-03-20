@@ -13,17 +13,18 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { RoomDetail, PricingData, BaseboardType } from '@/types/estimator';
 
-// Mock repair and fireplace options (these should eventually come from Supabase too)
+// Mock repair options (these should eventually come from Supabase too)
 const mockRepairOptions = [
   { id: 1, name: 'No Repairs', cost: 0 },
   { id: 2, name: 'Minor Repairs', cost: 250 },
   { id: 3, name: 'Major Repairs', cost: 750 }
 ];
 
+// Updated fireplace options
 const mockFireplaceOptions = [
   { id: 1, name: 'None', cost: 0 },
-  { id: 2, name: 'Standard Mantel', cost: 200 },
-  { id: 3, name: 'Custom Mantel', cost: 450 }
+  { id: 2, name: 'Brush Mantel', cost: 100 },
+  { id: 3, name: 'Spray Mantel', cost: 225 }
 ];
 
 const mockPaintMethods = [
@@ -647,6 +648,55 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
             onChange={handleBaseboardInstallationChange}
             className="form-input"
           />
+        </div>
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <h4 className="font-medium text-lg mb-3">Cost Summary</h4>
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <h5 className="font-semibold">{localRoom.name}</h5>
+            <span className="font-semibold">${localRoom.price.toFixed(2)}</span>
+          </div>
+          
+          <div className="space-y-1 text-sm">
+            {Object.entries(localRoom.priceDetails).map(([key, value]) => {
+              // Skip displaying items with zero value
+              if (value === 0) return null;
+              
+              // Format key for display
+              const formatKey = (key: string) => {
+                if (key === 'basePrice') return 'Base Price';
+                if (key === 'paintUpcharge') return 'Paint Upcharge';
+                if (key === 'baseboardUpcharge') return 'Baseboards';
+                if (key === 'highCeiling') return 'High Ceiling';
+                if (key === 'twoColors') return 'Two-Color';
+                if (key === 'millworkPriming') return 'Millwork Priming';
+                if (key === 'closets') return 'Closets';
+                if (key === 'fireplace') return 'Fireplace';
+                if (key === 'stairRailing') return 'Stair Railing';
+                if (key === 'repairs') return 'Repairs';
+                if (key === 'baseboardInstall') return 'Baseboard Install';
+                if (key === 'emptyRoomDiscount') return 'Empty House Discount';
+                if (key === 'noFloorCoveringDiscount') return 'No Floor Covering Discount';
+                
+                return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+              };
+              
+              // Format negative values as discounts in green
+              const isDiscount = value < 0;
+              const formattedValue = `${isDiscount ? '-' : '+'}$${Math.abs(value).toFixed(2)}`;
+              
+              return (
+                <div key={key} className="flex justify-between">
+                  <span>{formatKey(key)}:</span>
+                  <span className={isDiscount ? 'text-green-600 font-medium' : undefined}>
+                    {formattedValue}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

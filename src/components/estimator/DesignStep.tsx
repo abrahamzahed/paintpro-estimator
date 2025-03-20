@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, RefreshCw, PaintBucket } from 'lucide-react';
 import { RoomSelector } from './RoomSelector';
 import { RoomDetail, PricingData } from '@/types/estimator';
+import { TotalCostSummary } from './TotalCostSummary';
 
 interface DesignStepProps {
   rooms: RoomDetail[];
@@ -24,6 +25,23 @@ export const DesignStep: React.FC<DesignStepProps> = ({
   onReset,
   onPreviousStep
 }) => {
+  // Calculate subtotal
+  const subtotal = rooms.reduce((total, room) => total + room.price, 0);
+  
+  // Calculate volume discount
+  let volumeDiscount = 0;
+  if (pricingData && subtotal > 0) {
+    for (let i = pricingData.volumeDiscounts.length - 1; i >= 0; i--) {
+      if (subtotal >= pricingData.volumeDiscounts[i].threshold) {
+        volumeDiscount = (subtotal * pricingData.volumeDiscounts[i].discount_percentage) / 100;
+        break;
+      }
+    }
+  }
+  
+  // Calculate final total
+  const total = subtotal - volumeDiscount;
+
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
@@ -76,6 +94,15 @@ export const DesignStep: React.FC<DesignStepProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Add the total cost summary when rooms exist */}
+      {rooms.length > 0 && (
+        <TotalCostSummary 
+          subtotal={subtotal} 
+          volumeDiscount={volumeDiscount} 
+          total={total} 
+        />
+      )}
     </div>
   );
 };

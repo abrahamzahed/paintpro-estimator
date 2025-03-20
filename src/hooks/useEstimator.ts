@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -156,7 +157,7 @@ export const useEstimator = () => {
         walkInCount: 0,
         regularCount: 0,
       },
-      fireplace: 'None',
+      fireplace: 'None', // Default to "None"
       repairs: 'No Repairs',
       baseboardInstallationFeet: 0,
       price: defaultSize.base_price,
