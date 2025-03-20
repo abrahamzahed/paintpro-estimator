@@ -9,7 +9,8 @@ import {
   PricingData,
   SpecialCondition,
   Extra,
-  BaseboardType
+  BaseboardType,
+  PaintType
 } from '@/types/estimator';
 import { fetchPricingData, saveEstimate } from '@/lib/supabase';
 
@@ -51,6 +52,21 @@ export const useEstimator = () => {
     const loadPricingData = async () => {
       try {
         const data = await fetchPricingData();
+        
+        // Add "Own Paint/ No Paint" option to paint types
+        const ownPaintOption: PaintType = {
+          id: 'own-paint',
+          name: 'Own Paint/ No Paint',
+          upcharge_percentage: 0,
+          upcharge_amount: 0,
+          description: 'Customer will provide their own paint'
+        };
+        
+        // Make sure we don't add it if it already exists
+        if (!data.paintTypes.some(p => p.name === 'Own Paint/ No Paint')) {
+          data.paintTypes = [ownPaintOption, ...data.paintTypes];
+        }
+        
         setPricingData(data);
         
         // Set specialized data
@@ -127,7 +143,9 @@ export const useEstimator = () => {
       ? sizesForRoomType[middleIndex] 
       : pricingData.roomSizes[0];
     
-    const defaultPaintType = pricingData.paintTypes[0];
+    // Find "Own Paint/ No Paint" or use the first paint type
+    const ownPaintType = pricingData.paintTypes.find(p => p.name === 'Own Paint/ No Paint');
+    const defaultPaintType = ownPaintType || pricingData.paintTypes[0];
     
     const newRoom: RoomDetail = {
       id: uuidv4(),
@@ -206,11 +224,23 @@ export const useEstimator = () => {
       }
     }
     
+    // Store the current rooms and selections in localStorage for persistence
+    localStorage.setItem('estimator-rooms', JSON.stringify(rooms));
+    localStorage.setItem('estimator-contact', JSON.stringify(contactInfo));
+    
     setCurrentStep(currentStep + 1);
     window.scrollTo(0, 0);
   };
 
   const handlePreviousStep = () => {
+    // When going back from step 3 to step 2, make sure to load all rooms from storage
+    if (currentStep === 3) {
+      const storedRooms = localStorage.getItem('estimator-rooms');
+      if (storedRooms) {
+        setRooms(JSON.parse(storedRooms));
+      }
+    }
+    
     setCurrentStep(currentStep - 1);
     window.scrollTo(0, 0);
   };
@@ -227,6 +257,8 @@ export const useEstimator = () => {
         projectName: '',
       });
       setEstimateSaved(false);
+      localStorage.removeItem('estimator-rooms');
+      localStorage.removeItem('estimator-contact');
       toast.info('Estimate reset successfully');
     }
   };

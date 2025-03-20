@@ -422,41 +422,41 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
           <div className="border border-gray-200 rounded-lg p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Checkbox 
-                id="emptyRoom" 
+                id={`emptyRoom-${localRoom.id}`}
                 checked={localRoom.options.emptyRoom}
                 onCheckedChange={(checked) => handleOptionChange('emptyRoom', checked as boolean)}
               />
-              <Label htmlFor="emptyRoom" className="cursor-pointer">Empty House (15% discount)</Label>
+              <Label htmlFor={`emptyRoom-${localRoom.id}`} className="cursor-pointer">Empty Room (15% discount)</Label>
             </div>
             
             <div className="flex items-center gap-2">
               <Checkbox 
-                id="noFloorCovering" 
+                id={`noFloorCovering-${localRoom.id}`}
                 checked={localRoom.options.noFloorCovering}
                 onCheckedChange={(checked) => handleOptionChange('noFloorCovering', checked as boolean)}
               />
-              <Label htmlFor="noFloorCovering" className="cursor-pointer">No Floor Covering (5% discount)</Label>
+              <Label htmlFor={`noFloorCovering-${localRoom.id}`} className="cursor-pointer">No Floor Covering (5% discount)</Label>
             </div>
             
             <div className="flex items-center gap-2">
               <Checkbox 
-                id="twoColors" 
+                id={`twoColors-${localRoom.id}`}
                 checked={localRoom.options.twoColors}
                 onCheckedChange={(checked) => handleOptionChange('twoColors', checked as boolean)}
               />
-              <Label htmlFor="twoColors" className="cursor-pointer">Walls & Ceilings: Two Different Colors (+10%)</Label>
+              <Label htmlFor={`twoColors-${localRoom.id}`} className="cursor-pointer">Walls & Ceilings: Two Different Colors (+10%)</Label>
             </div>
             
             <div className="flex items-center gap-2">
               <Checkbox 
-                id="millworkPriming" 
+                id={`millworkPriming-${localRoom.id}`}
                 checked={localRoom.options.millworkPriming}
                 disabled={shouldDisableMillworkPriming()}
                 onCheckedChange={(checked) => handleOptionChange('millworkPriming', checked as boolean)}
                 className={shouldDisableMillworkPriming() ? "opacity-50" : ""}
               />
               <Label 
-                htmlFor="millworkPriming" 
+                htmlFor={`millworkPriming-${localRoom.id}`}
                 className={`cursor-pointer ${shouldDisableMillworkPriming() ? "text-gray-400" : ""}`}
               >
                 Millwork/Doors Need Priming (+50%)
