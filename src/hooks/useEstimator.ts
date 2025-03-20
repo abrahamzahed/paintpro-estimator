@@ -6,9 +6,11 @@ import {
   EstimatorSummary, 
   RoomDetail, 
   ContactInfo, 
-  PricingData 
+  PricingData,
+  SpecialCondition,
+  Extra
 } from '@/types/estimator';
-import { fetchPricingData } from '@/lib/mockData';
+import { fetchPricingData, saveEstimate } from '@/lib/supabase';
 
 // Email validation regex
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -40,6 +42,8 @@ export const useEstimator = () => {
   const [pricingData, setPricingData] = useState<PricingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [estimateSaved, setEstimateSaved] = useState(false);
+  const [specialConditions, setSpecialConditions] = useState<SpecialCondition[]>([]);
+  const [extras, setExtras] = useState<Extra[]>([]);
 
   // Fetch pricing data on component mount
   useEffect(() => {
@@ -47,6 +51,16 @@ export const useEstimator = () => {
       try {
         const data = await fetchPricingData();
         setPricingData(data);
+        
+        // Set specialized data
+        if (data.specialConditions) {
+          setSpecialConditions(data.specialConditions);
+        }
+        
+        if (data.extras) {
+          setExtras(data.extras);
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching pricing data:', error);
@@ -198,16 +212,18 @@ export const useEstimator = () => {
     }
   };
 
-  const handleSaveEstimate = () => {
-    // In a real app, this would save to the database
-    // For this demo, we'll just simulate saving
-    console.log('Saving estimate:', summary);
-    
-    // Store in localStorage for persistence
-    localStorage.setItem('paintProEstimate', JSON.stringify(summary));
-    
-    setEstimateSaved(true);
-    toast.success('Estimate saved successfully!');
+  const handleSaveEstimate = async () => {
+    try {
+      setIsLoading(true);
+      await saveEstimate(contactInfo, summary);
+      setEstimateSaved(true);
+      setIsLoading(false);
+      toast.success('Estimate saved successfully!');
+    } catch (error) {
+      console.error('Error saving estimate:', error);
+      setIsLoading(false);
+      toast.error('Failed to save estimate. Please try again.');
+    }
   };
 
   return {
@@ -218,6 +234,8 @@ export const useEstimator = () => {
     pricingData,
     isLoading,
     estimateSaved,
+    specialConditions,
+    extras,
     setContactInfo,
     handleAddRoom,
     handleUpdateRoom,

@@ -13,12 +13,31 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { RoomDetail, PricingData } from '@/types/estimator';
-import { 
-  mockBaseboardTypes, 
-  mockRepairOptions, 
-  mockFireplaceOptions, 
-  mockPaintMethods 
-} from '@/lib/mockData';
+
+// Mock data types for baseboard, repair, and fireplace options
+const mockBaseboardTypes = [
+  { id: 1, name: 'Regular Baseboards', upcharge_percentage: 0 },
+  { id: 2, name: 'Premium Baseboards', upcharge_percentage: 15 },
+  { id: 3, name: 'Custom Baseboards', upcharge_percentage: 30 }
+];
+
+const mockRepairOptions = [
+  { id: 1, name: 'No Repairs', cost: 0 },
+  { id: 2, name: 'Minor Repairs', cost: 250 },
+  { id: 3, name: 'Major Repairs', cost: 750 }
+];
+
+const mockFireplaceOptions = [
+  { id: 1, name: 'None', cost: 0 },
+  { id: 2, name: 'Standard Mantel', cost: 200 },
+  { id: 3, name: 'Custom Mantel', cost: 450 }
+];
+
+const mockPaintMethods = [
+  { id: 1, name: 'Spray' },
+  { id: 2, name: 'Brush' },
+  { id: 3, name: 'Roll' }
+];
 
 interface RoomSelectorProps {
   room: RoomDetail;
@@ -46,6 +65,8 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
   }, [localRoom.price]);
 
   const calculateRoomPrice = () => {
+    if (!pricingData) return;
+    
     const basePrice = localRoom.size.base_price;
     const priceDetails: Record<string, number> = { basePrice };
     
@@ -116,6 +137,15 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
       const noFloorDiscount = subtotal * 0.05;
       priceDetails.noFloorCoveringDiscount = -noFloorDiscount;
     }
+    
+    // Apply room-specific add-ons from Supabase
+    pricingData.roomAddons.forEach(addon => {
+      if (localRoom.options[addon.name as keyof typeof localRoom.options]) {
+        const addonCost = addon.cost_percentage ? 
+          basePrice * (addon.cost_percentage / 100) : addon.cost;
+        priceDetails[addon.name] = addonCost;
+      }
+    });
     
     // Calculate final price
     const totalPrice = Object.values(priceDetails).reduce((sum, value) => sum + value, 0);

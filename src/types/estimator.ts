@@ -5,6 +5,7 @@ export type RoomType = {
   id: number;
   name: string;
   description?: string;
+  created_at?: string;
 };
 
 export type RoomSize = {
@@ -12,6 +13,7 @@ export type RoomSize = {
   name: string;
   description?: string;
   base_price: number;
+  created_at?: string;
 };
 
 export type PaintType = {
@@ -20,6 +22,7 @@ export type PaintType = {
   upcharge_percentage: number;
   upcharge_amount: number;
   description?: string;
+  created_at?: string;
 };
 
 export type RoomAddOn = {
@@ -28,6 +31,8 @@ export type RoomAddOn = {
   cost: number;
   cost_percentage?: number;
   description?: string;
+  category?: string;
+  created_at?: string;
 };
 
 export type VolumeDiscount = {
@@ -35,6 +40,25 @@ export type VolumeDiscount = {
   threshold: number;
   discount_percentage: number;
   description?: string;
+  created_at?: string;
+};
+
+export type SpecialCondition = {
+  id: number;
+  name: string;
+  discount_percentage: number;
+  description?: string;
+  created_at?: string;
+};
+
+export type Extra = {
+  id: number;
+  name: string;
+  price: number;
+  price_unit?: string;
+  description?: string;
+  category?: string;
+  created_at?: string;
 };
 
 export type PaintMethod = 'Spray' | 'Brush' | 'Roll';
@@ -98,4 +122,6 @@ export type PricingData = {
   paintTypes: PaintType[];
   roomAddons: RoomAddOn[];
   volumeDiscounts: VolumeDiscount[];
+  specialConditions?: SpecialCondition[];
+  extras?: Extra[];
 };
