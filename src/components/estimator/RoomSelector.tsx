@@ -1,8 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Trash2 } from 'lucide-react';
 import { RoomDetail, PricingData, BaseboardType } from '@/types/estimator';
 import { RoomTypeSelector } from './room-selector/RoomTypeSelector';
@@ -330,9 +328,8 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
         />
 
         <div className="form-input-wrapper">
-          <Label className="form-label">Size</Label>
           <SelectField
-            label=""
+            label="Size"
             value={localRoom.size.id}
             onValueChange={handleSizeChange}
             options={availableSizes.map(size => ({ 
