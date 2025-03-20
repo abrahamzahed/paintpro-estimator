@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { 
@@ -17,8 +16,8 @@ import { calculateEstimatorSummary } from './summaryUtils';
 import { processPricingData } from './paintUtils';
 import { handleEstimatorSteps } from './navigationUtils';
 import { useRoomManagement } from './roomManagementUtils';
+import { supabase } from '@/integrations/supabase/client';
 
-// Add this to the global Window interface
 declare global {
   interface Window {
     handleNextStep?: () => void;
@@ -47,19 +46,18 @@ export const useEstimatorHook = () => {
   const [estimateSaved, setEstimateSaved] = useState(false);
   const [specialConditions, setSpecialConditions] = useState<SpecialCondition[]>([]);
   const [extras, setExtras] = useState<Extra[]>([]);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
-  // Fetch pricing data on component mount
   useEffect(() => {
     const loadPricingData = async () => {
       try {
         const data = await fetchPricingData();
         
-        // Process pricing data to ensure all required options are present
         const processedData = processPricingData(data);
         
         setPricingData(processedData);
         
-        // Set specialized data
         if (data.specialConditions) {
           setSpecialConditions(data.specialConditions);
         }
@@ -79,7 +77,6 @@ export const useEstimatorHook = () => {
     loadPricingData();
   }, []);
 
-  // Calculate summary whenever rooms or contact info change
   useEffect(() => {
     if (pricingData) {
       const updatedSummary = calculateEstimatorSummary(rooms, contactInfo, pricingData);
@@ -87,7 +84,6 @@ export const useEstimatorHook = () => {
     }
   }, [rooms, contactInfo, pricingData]);
 
-  // Get room management functions from the new utility
   const { handleAddRoom, handleUpdateRoom, handleDeleteRoom } = useRoomManagement({
     rooms,
     setRooms,
@@ -135,6 +131,36 @@ export const useEstimatorHook = () => {
     }
   };
 
+  const handleSendEstimateEmail = async () => {
+    if (!estimateSaved) {
+      toast.error('Please save the estimate before sending via email');
+      return;
+    }
+
+    try {
+      setSendingEmail(true);
+      
+      const { data, error } = await supabase.functions.invoke('send-estimate', {
+        body: {
+          estimateData: summary,
+          contactInfo: contactInfo,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setEmailSent(true);
+      setSendingEmail(false);
+      toast.success('Estimate sent to client via email');
+    } catch (error) {
+      console.error('Error sending estimate email:', error);
+      setSendingEmail(false);
+      toast.error('Failed to send estimate. Please try again.');
+    }
+  };
+
   return {
     currentStep,
     contactInfo,
@@ -145,6 +171,8 @@ export const useEstimatorHook = () => {
     estimateSaved,
     specialConditions,
     extras,
+    sendingEmail,
+    emailSent,
     setContactInfo,
     handleAddRoom,
     handleUpdateRoom,
@@ -152,6 +180,7 @@ export const useEstimatorHook = () => {
     handleNextStep,
     handlePreviousStep,
     handleReset,
-    handleSaveEstimate
+    handleSaveEstimate,
+    handleSendEstimateEmail
   };
 };

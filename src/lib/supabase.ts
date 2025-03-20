@@ -170,3 +170,21 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
     throw error;
   }
 }
+
+export async function sendEstimateEmail(estimateId: string, emailData: any) {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-estimate', {
+      body: {
+        estimateId,
+        emailData
+      }
+    });
+    
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Error sending estimate email:', error);
+    throw error;
+  }
+}
