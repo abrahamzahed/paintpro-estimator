@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { RoomDetail } from '@/types/estimator';
+import { formatKeyName, formatPriceValue, formatPrice } from '@/hooks/estimator/formatUtils';
 
 interface RoomDetailCardProps {
   room: RoomDetail;
@@ -8,30 +8,11 @@ interface RoomDetailCardProps {
 }
 
 export const RoomDetailCard: React.FC<RoomDetailCardProps> = ({ room, index }) => {
-  // Format key for display
-  const formatKey = (key: string) => {
-    if (key === 'basePrice') return 'Base Price';
-    if (key === 'paintUpcharge') return 'Paint Upcharge';
-    if (key === 'baseboardUpcharge') return 'Baseboards';
-    if (key === 'highCeiling') return 'High Ceiling';
-    if (key === 'twoColors') return 'Two-Color';
-    if (key === 'millworkPriming') return 'Millwork Priming';
-    if (key === 'closets') return 'Closets';
-    if (key === 'fireplace') return 'Fireplace';
-    if (key === 'stairRailing') return 'Stair Railing';
-    if (key === 'repairs') return 'Repairs';
-    if (key === 'baseboardInstall') return 'Baseboard Install';
-    if (key === 'emptyRoomDiscount') return 'Empty House Discount';
-    if (key === 'noFloorCoveringDiscount') return 'No Floor Covering Discount';
-    
-    return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
-  };
-
   return (
     <div className="bg-gray-50 rounded-lg border border-gray-200 p-5">
       <div className="flex justify-between items-start mb-3">
         <h5 className="text-lg font-medium">{room.name} (Room {index + 1})</h5>
-        <span className="text-lg font-semibold">${room.price.toFixed(2)}</span>
+        <span className="text-lg font-semibold">{formatPrice(room.price)}</span>
       </div>
       
       <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-3">
@@ -118,15 +99,14 @@ export const RoomDetailCard: React.FC<RoomDetailCardProps> = ({ room, index }) =
             // Skip displaying items with zero value
             if (value === 0) return null;
             
-            // Format negative values as discounts in green
+            // Determine if this is a discount (negative value)
             const isDiscount = value < 0;
-            const formattedValue = `${isDiscount ? '-' : '+'}$${Math.abs(value).toFixed(2)}`;
             
             return (
               <div key={key} className="flex justify-between">
-                <span>{formatKey(key)}:</span>
+                <span>{formatKeyName(key)}:</span>
                 <span className={isDiscount ? 'text-green-600 font-medium' : undefined}>
-                  {formattedValue}
+                  {formatPriceValue(value)}
                 </span>
               </div>
             );
