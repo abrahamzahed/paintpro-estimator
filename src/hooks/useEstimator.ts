@@ -8,7 +8,8 @@ import {
   ContactInfo, 
   PricingData,
   SpecialCondition,
-  Extra
+  Extra,
+  BaseboardType
 } from '@/types/estimator';
 import { fetchPricingData, saveEstimate } from '@/lib/supabase';
 
@@ -108,15 +109,32 @@ export const useEstimator = () => {
   }, [rooms, contactInfo, pricingData]);
 
   const handleAddRoom = () => {
-    if (!pricingData) return;
+    if (!pricingData || pricingData.roomTypes.length === 0 || pricingData.roomSizes.length === 0 || pricingData.paintTypes.length === 0) {
+      return;
+    }
+    
+    // Get the first room type from pricing data
+    const defaultRoomType = pricingData.roomTypes[0];
+    
+    // Get sizes for this room type
+    const sizesForRoomType = pricingData.roomSizes.filter(
+      size => size.room_type_id === defaultRoomType.id
+    );
+    
+    // Select first available size or fallback to first size if none available
+    const defaultSize = sizesForRoomType.length > 0 
+      ? sizesForRoomType[0] 
+      : pricingData.roomSizes[0];
+    
+    const defaultPaintType = pricingData.paintTypes[0];
     
     const newRoom: RoomDetail = {
       id: uuidv4(),
-      name: `Room ${rooms.length + 1}`,
-      roomType: pricingData.roomTypes[0],
-      size: pricingData.roomSizes[0],
-      paintType: pricingData.paintTypes[0],
-      baseboardType: 'Regular Baseboards',
+      name: `${defaultRoomType.name}`,
+      roomType: defaultRoomType,
+      size: defaultSize,
+      paintType: defaultPaintType,
+      baseboardType: 'No Baseboards', // Default to "No Baseboards" as required
       options: {
         emptyRoom: false,
         noFloorCovering: false,
@@ -141,9 +159,9 @@ export const useEstimator = () => {
       fireplace: 'None',
       repairs: 'No Repairs',
       baseboardInstallationFeet: 0,
-      price: pricingData.roomSizes[0].base_price,
+      price: defaultSize.base_price,
       priceDetails: {
-        basePrice: pricingData.roomSizes[0].base_price,
+        basePrice: defaultSize.base_price,
       },
     };
     

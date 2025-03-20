@@ -12,15 +12,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { RoomDetail, PricingData } from '@/types/estimator';
+import { RoomDetail, PricingData, BaseboardType } from '@/types/estimator';
 
-// Mock data types for baseboard, repair, and fireplace options
-const mockBaseboardTypes = [
-  { id: 1, name: 'Regular Baseboards', upcharge_percentage: 0 },
-  { id: 2, name: 'Premium Baseboards', upcharge_percentage: 15 },
-  { id: 3, name: 'Custom Baseboards', upcharge_percentage: 30 }
-];
-
+// Mock repair and fireplace options (these should eventually come from Supabase too)
 const mockRepairOptions = [
   { id: 1, name: 'No Repairs', cost: 0 },
   { id: 2, name: 'Minor Repairs', cost: 250 },
@@ -53,6 +47,48 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
   onDeleteRoom,
 }) => {
   const [localRoom, setLocalRoom] = useState<RoomDetail>(room);
+  const [availableSizes, setAvailableSizes] = useState<Array<any>>([]);
+  
+  // Set available room sizes when room type changes
+  useEffect(() => {
+    if (pricingData && localRoom.roomType) {
+      const filteredSizes = pricingData.roomSizes.filter(
+        size => size.room_type_id === localRoom.roomType.id
+      );
+      setAvailableSizes(filteredSizes);
+      
+      // If current size is not available for this room type, reset to first available size
+      if (filteredSizes.length > 0) {
+        const currentSizeExists = filteredSizes.some(size => size.id === localRoom.size.id);
+        if (!currentSizeExists) {
+          handleSizeChange(filteredSizes[0].id);
+        }
+      }
+    }
+  }, [localRoom.roomType, pricingData]);
+
+  // Check if millwork priming should be disabled
+  const shouldDisableMillworkPriming = () => {
+    return (
+      localRoom.baseboardType === 'No Baseboards' ||
+      localRoom.doors.count === 0 ||
+      (localRoom.closets.walkInCount === 0 && localRoom.closets.regularCount === 0) ||
+      localRoom.windows.count === 0
+    );
+  };
+
+  // Update millwork priming when conditions change
+  useEffect(() => {
+    if (shouldDisableMillworkPriming() && localRoom.options.millworkPriming) {
+      setLocalRoom(prev => ({
+        ...prev,
+        options: {
+          ...prev.options,
+          millworkPriming: false
+        }
+      }));
+    }
+  }, [localRoom.baseboardType, localRoom.doors.count, localRoom.closets, localRoom.windows.count]);
 
   // Update calculations whenever the local room changes
   useEffect(() => {
@@ -77,8 +113,12 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
     priceDetails.paintUpcharge = paintUpcharge;
     
     // Baseboard upcharge
-    const baseboardType = mockBaseboardTypes.find(b => b.name === localRoom.baseboardType);
-    const baseboardUpchargePercentage = baseboardType?.upcharge_percentage || 0;
+    let baseboardUpchargePercentage = 0;
+    if (localRoom.baseboardType === 'Brushed Baseboards') {
+      baseboardUpchargePercentage = 25;
+    } else if (localRoom.baseboardType === 'Sprayed Baseboards') {
+      baseboardUpchargePercentage = 50;
+    }
     const baseboardUpcharge = (basePrice * baseboardUpchargePercentage) / 100;
     priceDetails.baseboardUpcharge = baseboardUpcharge;
     
@@ -168,10 +208,13 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
     }
   };
 
-  const handleSizeChange = (value: string) => {
-    const selectedSize = pricingData.roomSizes.find(s => s.name === value);
+  const handleSizeChange = (sizeId: string) => {
+    const selectedSize = pricingData.roomSizes.find(s => s.id === sizeId);
     if (selectedSize) {
-      setLocalRoom(prev => ({ ...prev, size: selectedSize }));
+      setLocalRoom(prev => ({ 
+        ...prev, 
+        size: selectedSize 
+      }));
     }
   };
 
@@ -182,7 +225,7 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
     }
   };
 
-  const handleBaseboardChange = (value: string) => {
+  const handleBaseboardChange = (value: BaseboardType) => {
     setLocalRoom(prev => ({ ...prev, baseboardType: value }));
   };
 
@@ -299,16 +342,19 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
         <div className="form-input-wrapper">
           <Label className="form-label">Size</Label>
           <Select 
-            value={localRoom.size.name} 
+            value={localRoom.size.id}
             onValueChange={handleSizeChange}
+            disabled={availableSizes.length === 0}
           >
             <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select size" />
+              <SelectValue placeholder="Select size">
+                {localRoom.size.size && localRoom.size.size}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {pricingData.roomSizes.map((size) => (
-                <SelectItem key={size.id} value={size.name}>
-                  {size.name} (${size.base_price})
+              {availableSizes.map((size) => (
+                <SelectItem key={size.id} value={size.id}>
+                  {size.size}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -327,7 +373,15 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
             <SelectContent>
               {pricingData.paintTypes.map((paint) => (
                 <SelectItem key={paint.id} value={paint.name}>
-                  {paint.name} (+{paint.upcharge_percentage}% | +${paint.upcharge_amount})
+                  {paint.name}
+                  {paint.upcharge_percentage === 0 && paint.upcharge_amount === 0 ? 
+                    ' (no upcharge)' : 
+                    paint.upcharge_percentage > 0 && paint.upcharge_amount > 0 ? 
+                      ` (+${paint.upcharge_percentage}%) (+$${paint.upcharge_amount.toFixed(2)})` :
+                      paint.upcharge_percentage > 0 ? 
+                        ` (+${paint.upcharge_percentage}%)` : 
+                        ` (+$${paint.upcharge_amount.toFixed(2)})`
+                  }
                 </SelectItem>
               ))}
             </SelectContent>
@@ -338,17 +392,15 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
           <Label className="form-label">Baseboard Selection</Label>
           <Select 
             value={localRoom.baseboardType} 
-            onValueChange={handleBaseboardChange}
+            onValueChange={(value) => handleBaseboardChange(value as BaseboardType)}
           >
             <SelectTrigger className="form-select">
               <SelectValue placeholder="Select baseboard type" />
             </SelectTrigger>
             <SelectContent>
-              {mockBaseboardTypes.map((baseboard) => (
-                <SelectItem key={baseboard.id} value={baseboard.name}>
-                  {baseboard.name} {baseboard.upcharge_percentage > 0 && `(+${baseboard.upcharge_percentage}%)`}
-                </SelectItem>
-              ))}
+              <SelectItem value="No Baseboards">No Baseboards</SelectItem>
+              <SelectItem value="Brushed Baseboards">Brushed Baseboards (+25%)</SelectItem>
+              <SelectItem value="Sprayed Baseboards">Sprayed Baseboards (+50%)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -387,9 +439,16 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
               <Checkbox 
                 id="millworkPriming" 
                 checked={localRoom.options.millworkPriming}
+                disabled={shouldDisableMillworkPriming()}
                 onCheckedChange={(checked) => handleOptionChange('millworkPriming', checked as boolean)}
+                className={shouldDisableMillworkPriming() ? "opacity-50" : ""}
               />
-              <Label htmlFor="millworkPriming" className="cursor-pointer">Millwork/Doors Need Priming (+50%)</Label>
+              <Label 
+                htmlFor="millworkPriming" 
+                className={`cursor-pointer ${shouldDisableMillworkPriming() ? "text-gray-400" : ""}`}
+              >
+                Millwork/Doors Need Priming (+50%)
+              </Label>
             </div>
           </div>
         </div>

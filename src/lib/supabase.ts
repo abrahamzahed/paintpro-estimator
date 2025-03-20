@@ -53,9 +53,9 @@ export async function fetchPricingData(): Promise<PricingData> {
     
     const roomSizes: RoomSize[] = roomSizesRes.data.map(rs => ({
       id: rs.id,
-      name: rs.size,
+      size: rs.size,
+      room_type_id: rs.room_type_id,
       base_price: rs.base_price,
-      description: rs.size,
       created_at: rs.created_at
     }));
     
@@ -99,7 +99,7 @@ export async function fetchPricingData(): Promise<PricingData> {
       name: ex.name,
       price: ex.unit_price || 0,
       price_unit: ex.price_type,
-      description: ex.conditions, // Fixed: using conditions instead of description
+      description: ex.conditions,
       category: ex.category,
       created_at: ex.created_at
     }));
@@ -148,7 +148,7 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
       .insert({
         lead_id: leadData.id,
         project_name: contactInfo.projectName,
-        details: summary.rooms,
+        details: JSON.stringify(summary.rooms),
         subtotal: summary.subtotal,
         discount: summary.volumeDiscount,
         total_cost: summary.total,

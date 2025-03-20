@@ -2,22 +2,22 @@
 // Common types for the Paint Pro estimator
 
 export type RoomType = {
-  id: string; // Changed from number to string to match UUID from Supabase
+  id: string;
   name: string;
   description?: string;
   created_at?: string;
 };
 
 export type RoomSize = {
-  id: string; // Changed from number to string to match UUID from Supabase
-  name: string;
-  description?: string;
+  id: string;
+  size: string;
+  room_type_id?: string;
   base_price: number;
   created_at?: string;
 };
 
 export type PaintType = {
-  id: string; // Changed from number to string to match UUID from Supabase
+  id: string;
   name: string;
   upcharge_percentage: number;
   upcharge_amount: number;
@@ -26,7 +26,7 @@ export type PaintType = {
 };
 
 export type RoomAddOn = {
-  id: string; // Changed from number to string to match UUID from Supabase
+  id: string;
   name: string;
   cost: number;
   cost_percentage?: number;
@@ -36,7 +36,7 @@ export type RoomAddOn = {
 };
 
 export type VolumeDiscount = {
-  id: string; // Changed from number to string to match UUID from Supabase
+  id: string;
   threshold: number;
   discount_percentage: number;
   description?: string;
@@ -44,7 +44,7 @@ export type VolumeDiscount = {
 };
 
 export type SpecialCondition = {
-  id: string; // Changed from number to string to match UUID from Supabase
+  id: string;
   name: string;
   discount_percentage: number;
   description?: string;
@@ -52,7 +52,7 @@ export type SpecialCondition = {
 };
 
 export type Extra = {
-  id: string; // Changed from number to string to match UUID from Supabase
+  id: string;
   name: string;
   price: number;
   price_unit?: string;
@@ -63,13 +63,15 @@ export type Extra = {
 
 export type PaintMethod = 'Spray' | 'Brush' | 'Roll';
 
+export type BaseboardType = 'No Baseboards' | 'Brushed Baseboards' | 'Sprayed Baseboards';
+
 export interface RoomDetail {
   id: string;
   name: string;
   roomType: RoomType;
   size: RoomSize;
   paintType: PaintType;
-  baseboardType: string;
+  baseboardType: BaseboardType;
   options: {
     emptyRoom: boolean;
     noFloorCovering: boolean;
