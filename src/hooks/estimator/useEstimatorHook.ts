@@ -50,6 +50,8 @@ export const useEstimatorHook = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [savedEstimateId, setSavedEstimateId] = useState<string | null>(null);
+  // Flag to track if rooms have been modified since last save
+  const [roomsModified, setRoomsModified] = useState(false);
 
   useEffect(() => {
     const loadPricingData = async () => {
@@ -86,21 +88,90 @@ export const useEstimatorHook = () => {
     }
   }, [rooms, contactInfo, pricingData]);
 
-  const { handleAddRoom, handleUpdateRoom, handleDeleteRoom } = useRoomManagement({
+  // Modified useRoomManagement hook to track modifications
+  const roomManagement = useRoomManagement({
     rooms,
     setRooms,
     pricingData
   });
 
-  const { handleNextStep, handlePreviousStep } = handleEstimatorSteps({
-    currentStep,
-    setCurrentStep,
-    contactInfo,
-    rooms,
-    setRooms,
-    loadRoomsFromStorage,
-    saveEstimatorDataToStorage
-  });
+  // Override the original methods to track changes
+  const handleAddRoom = (room: RoomDetail) => {
+    roomManagement.handleAddRoom(room);
+    setRoomsModified(true);
+    setEstimateSaved(false);
+    setEmailSent(false);
+  };
+
+  const handleUpdateRoom = (updatedRoom: RoomDetail) => {
+    roomManagement.handleUpdateRoom(updatedRoom);
+    setRoomsModified(true);
+    setEstimateSaved(false);
+    setEmailSent(false);
+  };
+
+  const handleDeleteRoom = (roomId: string) => {
+    roomManagement.handleDeleteRoom(roomId);
+    setRoomsModified(true);
+    setEstimateSaved(false);
+    setEmailSent(false);
+  };
+
+  const handleNextStep = () => {
+    // This function can be overridden by the ContactForm component
+    if (window.handleNextStep) {
+      window.handleNextStep();
+      return;
+    }
+    
+    // Default validation for step 1 (fallback)
+    if (currentStep === 1) {
+      // Validate contact info
+      const validation = validateContactInfo(
+        contactInfo.fullName,
+        contactInfo.email,
+        contactInfo.phone,
+        contactInfo.address,
+        contactInfo.projectName
+      );
+      
+      if (!validation.isValid && validation.errorMessage) {
+        toast.error(validation.errorMessage);
+        return;
+      }
+    } else if (currentStep === 2) {
+      // Validate that there's at least one room
+      const validation = validateRooms(rooms.length);
+      
+      if (!validation.isValid && validation.errorMessage) {
+        toast.error(validation.errorMessage);
+        return;
+      }
+      
+      // When going from step 2 to step 3, always reset the saved state
+      // so users can save again if they've made changes
+      if (roomsModified) {
+        setEstimateSaved(false);
+        setEmailSent(false);
+      }
+    }
+    
+    // Store the current rooms and selections in localStorage for persistence
+    saveEstimatorDataToStorage(rooms, contactInfo);
+    
+    setCurrentStep(currentStep + 1);
+    window.scrollTo(0, 0);
+  };
+
+  const handlePreviousStep = () => {
+    // When going back from step 3 to step 2, flag that we might make changes
+    if (currentStep === 3) {
+      setRoomsModified(false);
+    }
+    
+    setCurrentStep(currentStep - 1);
+    window.scrollTo(0, 0);
+  };
 
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset your estimate? All data will be lost.')) {
@@ -116,57 +187,57 @@ export const useEstimatorHook = () => {
       setEstimateSaved(false);
       setEmailSent(false);
       setSavedEstimateId(null);
+      setRoomsModified(false);
       clearEstimatorStorage();
       toast.info('Estimate reset successfully');
     }
   };
 
-  const handleSaveEstimate = async () => {
+  const handleSaveEstimateAndEmail = async () => {
     try {
       setIsLoading(true);
+      setSendingEmail(true);
       console.log("Saving estimate...", { contactInfo, summary });
       
       const { estimateData, leadData, projectData } = await saveEstimate(contactInfo, summary);
       
       setSavedEstimateId(estimateData.id);
       setEstimateSaved(true);
-      setIsLoading(false);
-      toast.success('Estimate saved successfully!');
-    } catch (error) {
-      console.error('Error saving estimate:', error);
-      setIsLoading(false);
-      toast.error('Failed to save estimate. Please try again.');
-    }
-  };
-
-  const handleSendEstimateEmail = async () => {
-    if (!estimateSaved) {
-      toast.error('Please save the estimate before sending via email');
-      return;
-    }
-
-    try {
-      setSendingEmail(true);
+      setRoomsModified(false);
       
+      // Now automatically send the email
       const emailData = {
         estimateData: summary,
         contactInfo: contactInfo,
       };
 
-      // Check if we have a saved estimate ID
-      if (!savedEstimateId) {
-        throw new Error('Missing estimate ID. Please try saving the estimate again.');
+      try {
+        console.log("Sending email with estimate ID:", estimateData.id);
+        const data = await sendEstimateEmail(estimateData.id, emailData);
+        console.log("Email response:", data);
+        
+        if (data && data.success) {
+          setEmailSent(true);
+          toast.success('Estimate saved and sent to your email!');
+        } else {
+          // If email failed but save succeeded
+          console.error("Email sending failed:", data);
+          toast.error('Estimate saved but email sending failed. Please try again later.');
+          setEmailSent(false);
+        }
+      } catch (emailError) {
+        console.error('Error sending estimate email:', emailError);
+        toast.error('Estimate saved but email sending failed. Please try again later.');
+        setEmailSent(false);
+      } finally {
+        setSendingEmail(false);
+        setIsLoading(false);
       }
-      
-      const data = await sendEstimateEmail(savedEstimateId, emailData);
-
-      setEmailSent(true);
-      setSendingEmail(false);
-      toast.success('Estimate sent to client via email');
     } catch (error) {
-      console.error('Error sending estimate email:', error);
+      console.error('Error saving estimate:', error);
       setSendingEmail(false);
-      toast.error('Failed to send estimate. Please try again.');
+      setIsLoading(false);
+      toast.error('Failed to save estimate. Please try again.');
     }
   };
 
@@ -190,7 +261,7 @@ export const useEstimatorHook = () => {
     handleNextStep,
     handlePreviousStep,
     handleReset,
-    handleSaveEstimate,
-    handleSendEstimateEmail
+    handleSaveEstimate: handleSaveEstimateAndEmail,
+    handleSendEstimateEmail: handleSaveEstimateAndEmail // Keep the same function for compatibility
   };
 };

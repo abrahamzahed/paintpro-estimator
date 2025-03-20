@@ -24,7 +24,7 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
     <div className="animate-fade-in">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Your Estimate Summary</h2>
-        <p className="text-gray-600 mt-1">Review your estimate, save it, and send it to the client via email.</p>
+        <p className="text-gray-600 mt-1">Review your estimate, save it, and receive it via email.</p>
       </div>
       
       <EstimateSummary 

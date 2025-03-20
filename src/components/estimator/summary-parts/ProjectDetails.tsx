@@ -21,6 +21,12 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
         <dt className="font-medium text-gray-600">Contact:</dt>
         <dd>{contactInfo.fullName}</dd>
         
+        <dt className="font-medium text-gray-600">Email:</dt>
+        <dd>{contactInfo.email}</dd>
+        
+        <dt className="font-medium text-gray-600">Phone:</dt>
+        <dd>{contactInfo.phone}</dd>
+        
         <dt className="font-medium text-gray-600">Address:</dt>
         <dd>{contactInfo.address}</dd>
         

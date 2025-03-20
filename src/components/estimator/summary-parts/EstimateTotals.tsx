@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Mail, Loader2, CheckCircle } from 'lucide-react';
+import { Mail, Loader2, CheckCircle, Save } from 'lucide-react';
 
 interface EstimateTotalsProps {
   subtotal: number;
@@ -52,31 +52,27 @@ export const EstimateTotals: React.FC<EstimateTotalsProps> = ({
       </div>
       
       <div className="flex flex-wrap gap-4 mt-8 justify-end">
-        {/* Only show email button if saved */}
-        {onSendEstimateEmail && estimateSaved && (
-          emailSent ? (
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 text-blue-600 border-blue-600"
-              disabled
-            >
-              <CheckCircle size={18} /> Email Sent
-            </Button>
-          ) : (
-            <Button 
-              variant="secondary" 
-              className="flex items-center gap-2"
-              onClick={onSendEstimateEmail}
-              disabled={sendingEmail}
-            >
-              {sendingEmail ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Mail size={18} />
-              )}
-              {sendingEmail ? 'Sending...' : 'Send via Email'}
-            </Button>
-          )
+        {estimateSaved && emailSent ? (
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 text-green-600 border-green-600"
+            disabled
+          >
+            <CheckCircle size={18} /> Estimate Saved & Email Sent
+          </Button>
+        ) : (
+          <Button 
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            onClick={onSaveEstimate}
+            disabled={sendingEmail}
+          >
+            {sendingEmail ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Save size={18} />
+            )}
+            {sendingEmail ? 'Saving...' : 'Save Estimate & Email a Copy'}
+          </Button>
         )}
       </div>
     </div>

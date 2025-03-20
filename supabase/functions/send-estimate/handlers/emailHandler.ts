@@ -24,7 +24,14 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     // Create HTML content for the email
     const emailHtml = generateEstimateEmailHtml(estimateData, contactInfo);
     
-    // Send the email using Resend's default testing domain
+    // Validate that we have a valid recipient email
+    if (!contactInfo.email || !contactInfo.email.includes('@')) {
+      throw new Error("Invalid recipient email address");
+    }
+    
+    console.log("Sending email to:", contactInfo.email);
+    
+    // Send the email using Resend
     const emailResponse = await resend.emails.send({
       from: "Paint Pro Estimator <onboarding@resend.dev>",
       to: [contactInfo.email],
