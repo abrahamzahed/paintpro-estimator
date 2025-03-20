@@ -99,7 +99,7 @@ export async function fetchPricingData(): Promise<PricingData> {
       name: ex.name,
       price: ex.unit_price || 0,
       price_unit: ex.price_type,
-      description: ex.description || undefined,
+      description: ex.conditions, // Fixed: using conditions instead of description
       category: ex.category,
       created_at: ex.created_at
     }));
@@ -124,18 +124,23 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
     // First save lead information
     const { data: leadData, error: leadError } = await supabase
       .from("leads")
-      .insert([{
+      .insert({
         name: contactInfo.fullName,
         email: contactInfo.email,
         phone: contactInfo.phone,
         address: contactInfo.address,
         project_name: contactInfo.projectName,
-        created_at: new Date()
-      }])
+        created_at: new Date().toISOString() // Convert Date to ISO string
+      })
       .select()
       .single();
       
     if (leadError) throw leadError;
+    
+    // Ensure we have valid labor_cost and material_cost - use default values if not specified
+    const laborCost = summary.total * 0.7; // 70% of total as labor cost
+    const materialCost = summary.total * 0.3; // 30% of total as material cost
+    const estimatedHours = Math.ceil(summary.total / 75); // $75 per hour
     
     // Then save the estimate
     const { data: estimateData, error: estimateError } = await supabase
@@ -147,8 +152,11 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
         subtotal: summary.subtotal,
         discount: summary.volumeDiscount,
         total_cost: summary.total,
+        labor_cost: laborCost,
+        material_cost: materialCost,
+        estimated_hours: estimatedHours,
         status: "pending",
-        created_at: new Date()
+        created_at: new Date().toISOString() // Convert Date to ISO string
       })
       .select()
       .single();

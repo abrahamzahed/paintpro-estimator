@@ -2,14 +2,14 @@
 // Common types for the Paint Pro estimator
 
 export type RoomType = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   name: string;
   description?: string;
   created_at?: string;
 };
 
 export type RoomSize = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   name: string;
   description?: string;
   base_price: number;
@@ -17,7 +17,7 @@ export type RoomSize = {
 };
 
 export type PaintType = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   name: string;
   upcharge_percentage: number;
   upcharge_amount: number;
@@ -26,7 +26,7 @@ export type PaintType = {
 };
 
 export type RoomAddOn = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   name: string;
   cost: number;
   cost_percentage?: number;
@@ -36,7 +36,7 @@ export type RoomAddOn = {
 };
 
 export type VolumeDiscount = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   threshold: number;
   discount_percentage: number;
   description?: string;
@@ -44,7 +44,7 @@ export type VolumeDiscount = {
 };
 
 export type SpecialCondition = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   name: string;
   discount_percentage: number;
   description?: string;
@@ -52,7 +52,7 @@ export type SpecialCondition = {
 };
 
 export type Extra = {
-  id: number;
+  id: string; // Changed from number to string to match UUID from Supabase
   name: string;
   price: number;
   price_unit?: string;
