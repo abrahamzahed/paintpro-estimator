@@ -1,4 +1,3 @@
-
 import { PricingData } from '@/types/estimator';
 
 export const mockPricingData: PricingData = {
@@ -28,9 +27,9 @@ export const mockPricingData: PricingData = {
   ],
   roomAddons: [
     { id: 1, name: 'High Ceiling', cost: 600, description: 'Ceilings over 9 feet' },
-    { id: 2, name: 'Paint Ceiling', cost_percentage: 40, description: 'Adding ceiling painting' },
-    { id: 3, name: 'Two Colors', cost_percentage: 10, description: 'Using two different colors' },
-    { id: 4, name: 'Millwork Priming', cost_percentage: 50, description: 'Priming millwork before painting' },
+    { id: 2, name: 'Paint Ceiling', cost: 0, cost_percentage: 40, description: 'Adding ceiling painting' },
+    { id: 3, name: 'Two Colors', cost: 0, cost_percentage: 10, description: 'Using two different colors' },
+    { id: 4, name: 'Millwork Priming', cost: 0, cost_percentage: 50, description: 'Priming millwork before painting' },
     { id: 5, name: 'Stair Railing', cost: 250, description: 'Painting stair railings' },
     { id: 6, name: 'Minimal Repairs', cost: 50, description: 'Small hole repairs and patching' },
     { id: 7, name: 'Standard Repairs', cost: 150, description: 'Average wall repairs' },
