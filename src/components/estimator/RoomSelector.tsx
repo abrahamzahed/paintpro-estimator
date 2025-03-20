@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { RoomDetail, PricingData } from '@/types/estimator';
+import { RoomDetail, PricingData, BaseboardType } from '@/types/estimator';
 import { RoomTypeSelector } from './room-selector/RoomTypeSelector';
 import { SelectField } from './room-selector/SelectField';
 import { RoomDiscounts } from './room-selector/RoomDiscounts';
