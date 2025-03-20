@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 // Initialize Resend with the API key
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -31,7 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Send the email
     const emailResponse = await resend.emails.send({
-      from: "Paint Pro Estimator <estimate@paintpro.example.com>",
+      from: "Paint Pro Estimator <estimates@paintpro.app>",
       to: [contactInfo.email],
       subject: `Your Paint Pro Estimate: ${contactInfo.projectName}`,
       html: emailHtml,
@@ -41,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Log the email to the database
     const logResponse = await logEmailToDatabase(
-      estimateData.id,
+      estimateData.id || "unknown",
       contactInfo.email,
       `Your Paint Pro Estimate: ${contactInfo.projectName}`,
       'estimate-email',
@@ -202,9 +203,6 @@ async function logEmailToDatabase(
     return null;
   }
 }
-
-// Import createClient here to avoid TypeScript errors
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 // Serve the handler function
 serve(handler);

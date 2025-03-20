@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { 
@@ -112,6 +113,7 @@ export const useEstimatorHook = () => {
         projectName: '',
       });
       setEstimateSaved(false);
+      setEmailSent(false);
       clearEstimatorStorage();
       toast.info('Estimate reset successfully');
     }
