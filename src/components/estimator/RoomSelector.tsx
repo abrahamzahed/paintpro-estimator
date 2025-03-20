@@ -1,18 +1,19 @@
 
 import React, { useEffect, useState } from 'react';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Trash2 } from 'lucide-react';
 import { RoomDetail, PricingData, BaseboardType } from '@/types/estimator';
+import { RoomTypeSelector } from './room-selector/RoomTypeSelector';
+import { SelectField } from './room-selector/SelectField';
+import { RoomDiscounts } from './room-selector/RoomDiscounts';
+import { CeilingOptions } from './room-selector/CeilingOptions';
+import { DoorSection } from './room-selector/DoorSection';
+import { ClosetSection } from './room-selector/ClosetSection';
+import { WindowSection } from './room-selector/WindowSection';
+import { StairRailingOption } from './room-selector/StairRailingOption';
+import { NumberInputField } from './room-selector/NumberInputField';
 
 // Mock repair and fireplace options (these should eventually come from Supabase too)
 const mockRepairOptions = [
@@ -25,12 +26,6 @@ const mockFireplaceOptions = [
   { id: 1, name: 'None', cost: 0 },
   { id: 2, name: 'Standard Mantel', cost: 200 },
   { id: 3, name: 'Custom Mantel', cost: 450 }
-];
-
-const mockPaintMethods = [
-  { id: 1, name: 'Spray' },
-  { id: 2, name: 'Brush' },
-  { id: 3, name: 'Roll' }
 ];
 
 interface RoomSelectorProps {
@@ -328,323 +323,102 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
       </div>
 
       <div className="grid gap-6">
-        <div className="form-input-wrapper">
-          <Label className="form-label">Room Type</Label>
-          <Select 
-            value={localRoom.roomType.name} 
-            onValueChange={handleRoomTypeChange}
-          >
-            <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select room type" />
-            </SelectTrigger>
-            <SelectContent>
-              {pricingData.roomTypes.map((type) => (
-                <SelectItem key={type.id} value={type.name}>
-                  {type.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <RoomTypeSelector 
+          roomType={localRoom.roomType}
+          pricingData={pricingData}
+          onRoomTypeChange={handleRoomTypeChange}
+        />
 
         <div className="form-input-wrapper">
           <Label className="form-label">Size</Label>
-          <Select 
+          <SelectField
+            label=""
             value={localRoom.size.id}
             onValueChange={handleSizeChange}
+            options={availableSizes.map(size => ({ 
+              ...size, 
+              name: size.size 
+            }))}
+            placeholder="Select size"
             disabled={availableSizes.length === 0}
-          >
-            <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select size">
-                {localRoom.size.size && localRoom.size.size}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {availableSizes.map((size) => (
-                <SelectItem key={size.id} value={size.id}>
-                  {size.size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Paint Selection</Label>
-          <Select 
-            value={localRoom.paintType.name} 
-            onValueChange={handlePaintChange}
-          >
-            <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select paint type" />
-            </SelectTrigger>
-            <SelectContent>
-              {pricingData.paintTypes.map((paint) => (
-                <SelectItem key={paint.id} value={paint.name}>
-                  {paint.name}
-                  {paint.upcharge_percentage === 0 && paint.upcharge_amount === 0 ? 
-                    ' (no upcharge)' : 
-                    paint.upcharge_percentage > 0 && paint.upcharge_amount > 0 ? 
-                      ` (+${paint.upcharge_percentage}%) (+$${paint.upcharge_amount.toFixed(2)})` :
-                      paint.upcharge_percentage > 0 ? 
-                        ` (+${paint.upcharge_percentage}%)` : 
-                        ` (+$${paint.upcharge_amount.toFixed(2)})`
-                  }
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Baseboard Selection</Label>
-          <Select 
-            value={localRoom.baseboardType} 
-            onValueChange={(value) => handleBaseboardChange(value as BaseboardType)}
-          >
-            <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select baseboard type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="No Baseboards">No Baseboards</SelectItem>
-              <SelectItem value="Brushed Baseboards">Brushed Baseboards (+25%)</SelectItem>
-              <SelectItem value="Sprayed Baseboards">Sprayed Baseboards (+50%)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Room Discounts & Options</Label>
-          <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="emptyRoom" 
-                checked={localRoom.options.emptyRoom}
-                onCheckedChange={(checked) => handleOptionChange('emptyRoom', checked as boolean)}
-              />
-              <Label htmlFor="emptyRoom" className="cursor-pointer">Empty House (15% discount)</Label>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="noFloorCovering" 
-                checked={localRoom.options.noFloorCovering}
-                onCheckedChange={(checked) => handleOptionChange('noFloorCovering', checked as boolean)}
-              />
-              <Label htmlFor="noFloorCovering" className="cursor-pointer">No Floor Covering (5% discount)</Label>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="twoColors" 
-                checked={localRoom.options.twoColors}
-                onCheckedChange={(checked) => handleOptionChange('twoColors', checked as boolean)}
-              />
-              <Label htmlFor="twoColors" className="cursor-pointer">Walls & Ceilings: Two Different Colors (+10%)</Label>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="millworkPriming" 
-                checked={localRoom.options.millworkPriming}
-                disabled={shouldDisableMillworkPriming()}
-                onCheckedChange={(checked) => handleOptionChange('millworkPriming', checked as boolean)}
-                className={shouldDisableMillworkPriming() ? "opacity-50" : ""}
-              />
-              <Label 
-                htmlFor="millworkPriming" 
-                className={`cursor-pointer ${shouldDisableMillworkPriming() ? "text-gray-400" : ""}`}
-              >
-                Millwork/Doors Need Priming (+50%)
-              </Label>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Ceiling Options</Label>
-          <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="highCeiling" 
-                checked={localRoom.options.highCeiling}
-                onCheckedChange={(checked) => handleOptionChange('highCeiling', checked as boolean)}
-              />
-              <Label htmlFor="highCeiling" className="cursor-pointer">High Ceiling (+$600)</Label>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="paintCeiling" 
-                checked={localRoom.options.paintCeiling}
-                onCheckedChange={(checked) => handleOptionChange('paintCeiling', checked as boolean)}
-              />
-              <Label htmlFor="paintCeiling" className="cursor-pointer">Paint Ceiling (+40%)</Label>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Door Painting</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="doorCount" className="text-sm text-gray-600 mb-1 block">Door Count</Label>
-              <Input
-                id="doorCount"
-                type="number"
-                min="0"
-                value={localRoom.doors.count}
-                onChange={handleDoorCountChange}
-                className="form-input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="doorPaintMethod" className="text-sm text-gray-600 mb-1 block">Paint Method</Label>
-              <Select 
-                value={localRoom.doors.paintMethod} 
-                onValueChange={handleDoorPaintMethodChange}
-              >
-                <SelectTrigger className="form-select">
-                  <SelectValue placeholder="Select method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockPaintMethods.map((method) => (
-                    <SelectItem key={method.id} value={method.name}>
-                      {method.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Closets</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="walkInClosetCount" className="text-sm text-gray-600 mb-1 block">Walk-in Closet Count</Label>
-              <Input
-                id="walkInClosetCount"
-                type="number"
-                min="0"
-                value={localRoom.closets.walkInCount}
-                onChange={(e) => handleClosetCountChange('walkInCount', e)}
-                className="form-input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="regularClosetCount" className="text-sm text-gray-600 mb-1 block">Regular Closet Count</Label>
-              <Input
-                id="regularClosetCount"
-                type="number"
-                min="0"
-                value={localRoom.closets.regularCount}
-                onChange={(e) => handleClosetCountChange('regularCount', e)}
-                className="form-input"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Windows</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="windowCount" className="text-sm text-gray-600 mb-1 block">Window Count</Label>
-              <Input
-                id="windowCount"
-                type="number"
-                min="0"
-                value={localRoom.windows.count}
-                onChange={handleWindowCountChange}
-                className="form-input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="windowPaintMethod" className="text-sm text-gray-600 mb-1 block">Paint Method</Label>
-              <Select 
-                value={localRoom.windows.paintMethod} 
-                onValueChange={handleWindowPaintMethodChange}
-              >
-                <SelectTrigger className="form-select">
-                  <SelectValue placeholder="Select method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockPaintMethods.map((method) => (
-                    <SelectItem key={method.id} value={method.name}>
-                      {method.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Fireplace Mantel</Label>
-          <Select 
-            value={localRoom.fireplace} 
-            onValueChange={handleFireplaceChange}
-          >
-            <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select option" />
-            </SelectTrigger>
-            <SelectContent>
-              {mockFireplaceOptions.map((option) => (
-                <SelectItem key={option.id} value={option.name}>
-                  {option.name} {option.cost > 0 && `(+$${option.cost})`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Stair Railing</Label>
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <Checkbox 
-                id="stairRailing" 
-                checked={localRoom.options.stairRailing}
-                onCheckedChange={(checked) => handleOptionChange('stairRailing', checked as boolean)}
-              />
-              <Label htmlFor="stairRailing" className="cursor-pointer">Staircase Railing to Paint (+$250)</Label>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label className="form-label">Repairs</Label>
-          <Select 
-            value={localRoom.repairs} 
-            onValueChange={handleRepairsChange}
-          >
-            <SelectTrigger className="form-select">
-              <SelectValue placeholder="Select repair option" />
-            </SelectTrigger>
-            <SelectContent>
-              {mockRepairOptions.map((option) => (
-                <SelectItem key={option.id} value={option.name}>
-                  {option.name} {option.cost > 0 && `(+$${option.cost})`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="form-input-wrapper">
-          <Label htmlFor="baseboardInstallation" className="form-label">Baseboard Installation (LF)</Label>
-          <Input
-            id="baseboardInstallation"
-            type="number"
-            min="0"
-            value={localRoom.baseboardInstallationFeet}
-            onChange={handleBaseboardInstallationChange}
-            className="form-input"
           />
         </div>
+
+        <SelectField
+          label="Paint Selection"
+          value={localRoom.paintType.name}
+          onValueChange={handlePaintChange}
+          options={pricingData.paintTypes}
+          placeholder="Select paint type"
+        />
+
+        <SelectField
+          label="Baseboard Selection"
+          value={localRoom.baseboardType}
+          onValueChange={(value) => handleBaseboardChange(value as BaseboardType)}
+          options={[
+            { id: 1, name: 'No Baseboards' },
+            { id: 2, name: 'Brushed Baseboards', upcharge_percentage: 25 },
+            { id: 3, name: 'Sprayed Baseboards', upcharge_percentage: 50 }
+          ]}
+          placeholder="Select baseboard type"
+        />
+
+        <RoomDiscounts 
+          options={localRoom.options}
+          handleOptionChange={handleOptionChange}
+          shouldDisableMillworkPriming={shouldDisableMillworkPriming()}
+        />
+
+        <CeilingOptions 
+          options={localRoom.options}
+          handleOptionChange={handleOptionChange}
+        />
+
+        <DoorSection
+          doors={localRoom.doors}
+          handleDoorCountChange={handleDoorCountChange}
+          handleDoorPaintMethodChange={handleDoorPaintMethodChange}
+        />
+
+        <ClosetSection
+          closets={localRoom.closets}
+          handleClosetCountChange={handleClosetCountChange}
+        />
+
+        <WindowSection
+          windows={localRoom.windows}
+          handleWindowCountChange={handleWindowCountChange}
+          handleWindowPaintMethodChange={handleWindowPaintMethodChange}
+        />
+
+        <SelectField
+          label="Fireplace Mantel"
+          value={localRoom.fireplace}
+          onValueChange={handleFireplaceChange}
+          options={mockFireplaceOptions}
+          placeholder="Select option"
+        />
+
+        <StairRailingOption
+          options={localRoom.options}
+          handleOptionChange={handleOptionChange}
+        />
+
+        <SelectField
+          label="Repairs"
+          value={localRoom.repairs}
+          onValueChange={handleRepairsChange}
+          options={mockRepairOptions}
+          placeholder="Select repair option"
+        />
+
+        <NumberInputField
+          id="baseboardInstallation"
+          label="Baseboard Installation (LF)"
+          value={localRoom.baseboardInstallationFeet}
+          onChange={handleBaseboardInstallationChange}
+        />
       </div>
     </div>
   );
