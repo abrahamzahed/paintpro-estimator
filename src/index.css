@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 224.3 76.3% 48%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -96,6 +90,115 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gray-50 text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+  }
+}
+
+@layer components {
+  .step-item {
+    @apply flex items-center relative;
+  }
+  
+  .step-item:not(:first-child):before {
+    @apply content-[''] bg-gray-200 absolute h-[2px] w-full right-2/4 top-1/3 -translate-y-2/4;
+  }
+  
+  .step {
+    @apply w-9 h-9 flex items-center justify-center z-10 relative bg-white border-2 border-blue-600 rounded-full font-semibold text-blue-600;
+  }
+  
+  .active .step {
+    @apply bg-blue-600 text-white;
+  }
+  
+  .complete .step {
+    @apply bg-blue-600 text-white;
+  }
+  
+  .complete:not(:first-child):before,
+  .active:not(:first-child):before {
+    @apply bg-blue-600;
+  }
+  
+  .step-label {
+    @apply absolute -bottom-8 text-center w-full text-sm font-medium;
+  }
+
+  .form-input-wrapper {
+    @apply mb-6;
+  }
+
+  .form-label {
+    @apply block text-gray-700 text-sm font-medium mb-2;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200;
+  }
+
+  .form-select {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-paintpro-blue text-white font-medium px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-700 font-medium px-6 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200;
+  }
+
+  .progress-connector {
+    @apply flex-1 h-[2px] bg-gray-200;
+  }
+
+  .progress-connector.active {
+    @apply bg-blue-600;
+  }
+
+  .room-card {
+    @apply border border-gray-200 rounded-lg p-5 mb-5 bg-white shadow-sm hover:shadow-md transition-all duration-200;
+  }
+
+  .discount-text {
+    @apply text-paintpro-discount;
+  }
+
+  .summary-card {
+    @apply bg-paintpro-lightblue rounded-lg p-6;
+  }
+
+  .summary-row {
+    @apply flex justify-between py-1;
+  }
+
+  .summary-divider {
+    @apply h-px bg-blue-100 my-4;
+  }
+  
+  .container-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-4xl mx-auto;
+  }
+  
+  /* Animation classes */
+  .slide-enter {
+    @apply transform translate-x-full;
+  }
+  
+  .slide-enter-active {
+    @apply transform translate-x-0 transition duration-300 ease-in-out;
+  }
+  
+  .slide-exit {
+    @apply transform translate-x-0;
+  }
+  
+  .slide-exit-active {
+    @apply transform -translate-x-full transition duration-300 ease-in-out;
   }
 }
