@@ -134,12 +134,12 @@ export const useEstimator = () => {
       roomType: defaultRoomType,
       size: defaultSize,
       paintType: defaultPaintType,
-      baseboardType: 'No Baseboards', // Default to "No Baseboards" as required
+      baseboardType: 'No Baseboards', // Default to "No Baseboards" 
       options: {
         emptyRoom: false,
         noFloorCovering: false,
         twoColors: false,
-        millworkPriming: false,
+        millworkPriming: false, // This will be disabled by default
         highCeiling: false,
         paintCeiling: false,
         stairRailing: false,

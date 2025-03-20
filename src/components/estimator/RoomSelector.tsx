@@ -67,8 +67,9 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
     }
   }, [localRoom.roomType, pricingData]);
 
-  // Check if millwork priming should be disabled
+  // Check if millwork priming should be disabled based on all conditions
   const shouldDisableMillworkPriming = () => {
+    // Disable if any of these conditions are true
     return (
       localRoom.baseboardType === 'No Baseboards' ||
       localRoom.doors.count === 0 ||
@@ -80,6 +81,7 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
   // Update millwork priming when conditions change
   useEffect(() => {
     if (shouldDisableMillworkPriming() && localRoom.options.millworkPriming) {
+      // If conditions now require disabling and it was checked, uncheck it
       setLocalRoom(prev => ({
         ...prev,
         options: {
@@ -88,7 +90,13 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
         }
       }));
     }
-  }, [localRoom.baseboardType, localRoom.doors.count, localRoom.closets, localRoom.windows.count]);
+  }, [
+    localRoom.baseboardType, 
+    localRoom.doors.count, 
+    localRoom.closets.walkInCount,
+    localRoom.closets.regularCount,
+    localRoom.windows.count
+  ]);
 
   // Update calculations whenever the local room changes
   useEffect(() => {
