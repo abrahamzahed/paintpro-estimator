@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { 
   Select, 
@@ -57,23 +56,27 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({
       );
       setAvailableSizes(filteredSizes);
       
-      // If current size is not available for this room type, reset to first available size
+      // If current size is not available for this room type, reset to average size
       if (filteredSizes.length > 0) {
         const currentSizeExists = filteredSizes.some(size => size.id === localRoom.size.id);
         if (!currentSizeExists) {
-          handleSizeChange(filteredSizes[0].id);
+          // Find the average size (middle index) instead of the first size
+          const middleIndex = Math.floor(filteredSizes.length / 2);
+          handleSizeChange(filteredSizes[middleIndex].id);
         }
       }
     }
   }, [localRoom.roomType, pricingData]);
 
-  // Check if millwork priming should be disabled based on all conditions
+  // Check if millwork priming should be disabled 
   const shouldDisableMillworkPriming = () => {
-    // Disable if any of these conditions are true
+    // Only disable if ALL millwork elements are missing 
+    // (changed from OR to AND conditions)
     return (
-      localRoom.baseboardType === 'No Baseboards' ||
-      localRoom.doors.count === 0 ||
-      (localRoom.closets.walkInCount === 0 && localRoom.closets.regularCount === 0) ||
+      localRoom.baseboardType === 'No Baseboards' && 
+      localRoom.doors.count === 0 && 
+      localRoom.closets.walkInCount === 0 && 
+      localRoom.closets.regularCount === 0 && 
       localRoom.windows.count === 0
     );
   };

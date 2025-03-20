@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -121,9 +120,10 @@ export const useEstimator = () => {
       size => size.room_type_id === defaultRoomType.id
     );
     
-    // Select first available size or fallback to first size if none available
+    // Select the average size (middle element) for better default experience
+    const middleIndex = Math.floor(sizesForRoomType.length / 2);
     const defaultSize = sizesForRoomType.length > 0 
-      ? sizesForRoomType[0] 
+      ? sizesForRoomType[middleIndex] 
       : pricingData.roomSizes[0];
     
     const defaultPaintType = pricingData.paintTypes[0];
