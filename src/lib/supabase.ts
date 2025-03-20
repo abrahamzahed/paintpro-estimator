@@ -12,12 +12,7 @@ import {
   SpecialCondition,
   Extra
 } from '@/types/estimator';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/integrations/supabase/client';
 
 export async function fetchPricingData(): Promise<PricingData> {
   try {
@@ -48,14 +43,75 @@ export async function fetchPricingData(): Promise<PricingData> {
     if (specialConditionsRes.error) throw new Error(`Special conditions error: ${specialConditionsRes.error.message}`);
     if (extrasRes.error) throw new Error(`Extras error: ${extrasRes.error.message}`);
     
+    // Map the database fields to our application types
+    const roomTypes: RoomType[] = roomTypesRes.data.map(rt => ({
+      id: rt.id,
+      name: rt.name,
+      description: rt.description || undefined,
+      created_at: rt.created_at
+    }));
+    
+    const roomSizes: RoomSize[] = roomSizesRes.data.map(rs => ({
+      id: rs.id,
+      name: rs.size,
+      base_price: rs.base_price,
+      description: rs.size,
+      created_at: rs.created_at
+    }));
+    
+    const paintTypes: PaintType[] = paintTypesRes.data.map(pt => ({
+      id: pt.id,
+      name: pt.name,
+      upcharge_percentage: pt.percentage_upcharge || 0,
+      upcharge_amount: pt.fixed_upcharge || 0,
+      description: pt.description || undefined,
+      created_at: pt.created_at
+    }));
+    
+    const roomAddons: RoomAddOn[] = roomAddonsRes.data.map(ra => ({
+      id: ra.id,
+      name: ra.name,
+      cost: ra.value,
+      cost_percentage: ra.addon_type === 'percentage' ? ra.value : undefined,
+      description: ra.description || undefined,
+      category: ra.addon_type,
+      created_at: ra.created_at
+    }));
+    
+    const volumeDiscounts: VolumeDiscount[] = volumeDiscountsRes.data.map(vd => ({
+      id: vd.id,
+      threshold: vd.threshold,
+      discount_percentage: vd.discount_percentage,
+      description: vd.has_extra ? 'Includes extras' : undefined,
+      created_at: vd.created_at
+    }));
+    
+    const specialConditions: SpecialCondition[] = specialConditionsRes.data.map(sc => ({
+      id: sc.id,
+      name: sc.name,
+      discount_percentage: sc.discount_percentage,
+      description: sc.description || undefined,
+      created_at: sc.created_at
+    }));
+    
+    const extras: Extra[] = extrasRes.data.map(ex => ({
+      id: ex.id,
+      name: ex.name,
+      price: ex.unit_price || 0,
+      price_unit: ex.price_type,
+      description: ex.description || undefined,
+      category: ex.category,
+      created_at: ex.created_at
+    }));
+    
     return {
-      roomTypes: roomTypesRes.data as RoomType[],
-      roomSizes: roomSizesRes.data as RoomSize[],
-      roomAddons: roomAddonsRes.data as RoomAddOn[],
-      paintTypes: paintTypesRes.data as PaintType[],
-      volumeDiscounts: volumeDiscountsRes.data as VolumeDiscount[],
-      specialConditions: specialConditionsRes.data as SpecialCondition[],
-      extras: extrasRes.data as Extra[]
+      roomTypes,
+      roomSizes,
+      paintTypes,
+      roomAddons,
+      volumeDiscounts,
+      specialConditions,
+      extras
     };
   } catch (error) {
     console.error('Error fetching pricing data:', error);
@@ -89,7 +145,7 @@ export async function saveEstimate(contactInfo: any, summary: EstimatorSummary) 
         project_name: contactInfo.projectName,
         details: summary.rooms,
         subtotal: summary.subtotal,
-        volume_discount: summary.volumeDiscount,
+        discount: summary.volumeDiscount,
         total_cost: summary.total,
         status: "pending",
         created_at: new Date()
