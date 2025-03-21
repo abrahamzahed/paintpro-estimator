@@ -17,37 +17,28 @@ const formatDiscountOption = (value: boolean, discountText: string): string =>
  */
 function generateProjectDetailsHtml(contactInfo: any): string {
   return `
-    <h2>Project Details</h2>
-    <div class="project-details">
-      <div class="project-detail-item">
-        <div class="project-detail-label">Project Name:</div>
-        <div>${contactInfo.projectName || "New Project"}</div>
-      </div>
-      
-      <div class="project-detail-item">
-        <div class="project-detail-label">Client:</div>
-        <div>${contactInfo.fullName}</div>
-      </div>
-      
-      <div class="project-detail-item">
-        <div class="project-detail-label">Email:</div>
-        <div>${contactInfo.email}</div>
-      </div>
-      
-      <div class="project-detail-item">
-        <div class="project-detail-label">Phone:</div>
-        <div>${contactInfo.phone}</div>
-      </div>
-      
-      <div class="project-detail-item">
-        <div class="project-detail-label">Address:</div>
-        <div>${contactInfo.address}</div>
-      </div>
-      
-      <div class="project-detail-item">
-        <div class="project-detail-label">Date:</div>
-        <div>${new Date().toLocaleDateString()}</div>
-      </div>
+    <div style="margin-bottom: 30px;">
+      <h2 style="color: #1f2937; font-size: 20px; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Project Details</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 12px; width: 25%; font-weight: bold; color: #4b5563;">Project Name:</td>
+          <td style="padding: 8px 12px; width: 25%;">${contactInfo.projectName || "New Project"}</td>
+          <td style="padding: 8px 12px; width: 25%; font-weight: bold; color: #4b5563;">Date:</td>
+          <td style="padding: 8px 12px; width: 25%;">${new Date().toLocaleDateString()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; font-weight: bold; color: #4b5563;">Client:</td>
+          <td style="padding: 8px 12px;">${contactInfo.fullName}</td>
+          <td style="padding: 8px 12px; font-weight: bold; color: #4b5563;">Phone:</td>
+          <td style="padding: 8px 12px;">${contactInfo.phone}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; font-weight: bold; color: #4b5563;">Email:</td>
+          <td style="padding: 8px 12px;">${contactInfo.email}</td>
+          <td style="padding: 8px 12px; font-weight: bold; color: #4b5563;">Address:</td>
+          <td style="padding: 8px 12px;">${contactInfo.address}</td>
+        </tr>
+      </table>
     </div>
   `;
 }
@@ -70,8 +61,8 @@ function generatePriceBreakdownHtml(priceDetails: Record<string, any>): string {
         
       return `
         <tr>
-          <td style="padding: 5px; text-align: left;">${formattedKey}:</td>
-          <td style="padding: 5px; text-align: right;">${valueFormatted}</td>
+          <td style="padding: 5px; text-align: left; color: #4b5563;">${formattedKey}:</td>
+          <td style="padding: 5px; text-align: right; font-weight: bold;">${valueFormatted}</td>
         </tr>
       `;
     })
@@ -79,98 +70,82 @@ function generatePriceBreakdownHtml(priceDetails: Record<string, any>): string {
 }
 
 /**
+ * Generate HTML for room details in a two-column layout
+ */
+function generateRoomDetailsHtml(room: any): string {
+  return `
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+      <tr>
+        <td style="width: 25%; padding: 6px 8px; color: #4b5563;">Size:</td>
+        <td style="width: 25%; padding: 6px 8px;">${room.size.size}</td>
+        <td style="width: 25%; padding: 6px 8px; color: #4b5563;">Paint Type:</td>
+        <td style="width: 25%; padding: 6px 8px;">${room.paintType.name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">Ceiling:</td>
+        <td style="padding: 6px 8px;">${room.options.highCeiling ? 'High ceiling' : 'Standard'}</td>
+        <td style="padding: 6px 8px; color: #4b5563;">Wall Colors:</td>
+        <td style="padding: 6px 8px;">${room.options.twoColors ? 'Two colors' : 'Single color'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">Closets:</td>
+        <td style="padding: 6px 8px;">${room.closets.walkInCount} walk-in, ${room.closets.regularCount} regular</td>
+        <td style="padding: 6px 8px; color: #4b5563;">Doors:</td>
+        <td style="padding: 6px 8px;">${room.doors.count} doors</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">Windows:</td>
+        <td style="padding: 6px 8px;">${room.windows.count} windows</td>
+        <td style="padding: 6px 8px; color: #4b5563;">Fireplace:</td>
+        <td style="padding: 6px 8px;">${room.fireplace}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">Repairs:</td>
+        <td style="padding: 6px 8px;">${room.repairs}</td>
+        <td style="padding: 6px 8px; color: #4b5563;">Stair Railing:</td>
+        <td style="padding: 6px 8px;">${room.options.stairRailing ? 'Included' : 'Not included'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">Baseboards:</td>
+        <td style="padding: 6px 8px;">${room.baseboardType}</td>
+        <td style="padding: 6px 8px; color: #4b5563;">Baseboard Installation:</td>
+        <td style="padding: 6px 8px;">${room.baseboardInstallationFeet > 0 ? `${room.baseboardInstallationFeet} linear feet` : 'None'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">Millwork Priming:</td>
+        <td style="padding: 6px 8px;">${room.options.millworkPriming ? 'Included' : 'Not needed'}</td>
+        <td style="padding: 6px 8px; color: #4b5563;">Empty Room:</td>
+        <td style="padding: 6px 8px;">${formatDiscountOption(room.options.emptyRoom, 'Discounted')}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; color: #4b5563;">No Floor Covering:</td>
+        <td style="padding: 6px 8px;">${formatDiscountOption(room.options.noFloorCovering, 'Discounted')}</td>
+        <td style="padding: 6px 8px;"></td>
+        <td style="padding: 6px 8px;"></td>
+      </tr>
+    </table>
+  `;
+}
+
+/**
  * Generate HTML for a single room card
  */
 function generateRoomCardHtml(room: any, index: number): string {
   const priceBreakdownHtml = generatePriceBreakdownHtml(room.priceDetails);
+  const roomDetailsHtml = generateRoomDetailsHtml(room);
 
   return `
     <div style="margin-bottom: 30px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-        <h3 style="margin: 0; font-size: 18px;">${room.name} (Room ${index + 1})</h3>
-        <span style="font-weight: bold; font-size: 18px;">$${room.price.toFixed(2)}</span>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+        <h3 style="margin: 0; font-size: 18px; color: #1f2937;">${room.name} (Room ${index + 1})</h3>
+        <span style="font-weight: bold; font-size: 18px; color: #1f2937;">$${room.price.toFixed(2)}</span>
       </div>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Size:</p>
-          <p style="margin: 5px 0;">${room.size.size}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Paint Type:</p>
-          <p style="margin: 5px 0;">${room.paintType.name}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Ceiling:</p>
-          <p style="margin: 5px 0;">${room.options.highCeiling ? 'High ceiling' : 'Standard'}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Wall Colors:</p>
-          <p style="margin: 5px 0;">${room.options.twoColors ? 'Two colors' : 'Single color'}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Closets:</p>
-          <p style="margin: 5px 0;">${room.closets.walkInCount} walk-in, ${room.closets.regularCount} regular</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Doors:</p>
-          <p style="margin: 5px 0;">${room.doors.count} doors</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Windows:</p>
-          <p style="margin: 5px 0;">${room.windows.count} windows</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Fireplace:</p>
-          <p style="margin: 5px 0;">${room.fireplace}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Repairs:</p>
-          <p style="margin: 5px 0;">${room.repairs}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Stair Railing:</p>
-          <p style="margin: 5px 0;">${room.options.stairRailing ? 'Included' : 'Not included'}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Baseboards:</p>
-          <p style="margin: 5px 0;">${room.baseboardType}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Baseboard Installation:</p>
-          <p style="margin: 5px 0;">${room.baseboardInstallationFeet > 0 ? `${room.baseboardInstallationFeet} linear feet` : 'None'}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Millwork Priming:</p>
-          <p style="margin: 5px 0;">${room.options.millworkPriming ? 'Included' : 'Not needed'}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Empty Room:</p>
-          <p style="margin: 5px 0;">${formatDiscountOption(room.options.emptyRoom, 'Discounted')}</p>
-        </div>
-        
-        <div>
-          <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">No Floor Covering:</p>
-          <p style="margin: 5px 0;">${formatDiscountOption(room.options.noFloorCovering, 'Discounted')}</p>
-        </div>
-      </div>
+      ${roomDetailsHtml}
       
       <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-        <h4 style="margin: 0 0 10px 0; font-size: 16px;">Price Breakdown:</h4>
-        <table style="width: 100%; font-size: 14px;">
+        <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #1f2937;">Price Breakdown:</h4>
+        <table style="width: 100%; border-collapse: collapse;">
           <tbody>
             ${priceBreakdownHtml}
           </tbody>
@@ -199,10 +174,21 @@ function generateTotalSectionHtml(estimateData: any): string {
   }).format(estimateData.total);
 
   return `
-    <div class="total-section">
-      <p><strong>Subtotal:</strong> $${estimateData.subtotal.toFixed(2)}</p>
-      <p><strong>Volume Discount:</strong> $${estimateData.volumeDiscount.toFixed(2)}</p>
-      <p class="grand-total">Total Estimate: ${totalFormatted}</p>
+    <div style="margin-top: 30px; border-top: 2px solid #e5e7eb; padding-top: 20px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px; text-align: right; width: 80%; font-weight: bold; color: #4b5563;">Subtotal:</td>
+          <td style="padding: 8px; text-align: right; width: 20%;">$${estimateData.subtotal.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; text-align: right; font-weight: bold; color: #4b5563;">Volume Discount:</td>
+          <td style="padding: 8px; text-align: right; color: #10b981;">-$${Math.abs(estimateData.volumeDiscount).toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 15px 8px; text-align: right; font-weight: bold; font-size: 18px; color: #1f2937; border-top: 1px solid #e5e7eb;">Total Estimate:</td>
+          <td style="padding: 15px 8px; text-align: right; font-weight: bold; font-size: 18px; color: #1f2937; border-top: 1px solid #e5e7eb;">${totalFormatted}</td>
+        </tr>
+      </table>
     </div>
   `;
 }
@@ -213,18 +199,43 @@ function generateTotalSectionHtml(estimateData: any): string {
 function generateEmailStyles(): string {
   return `
     <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-      .header { text-align: center; margin-bottom: 30px; }
-      h1 { color: #2563eb; }
-      h2 { color: #1f2937; margin-top: 30px; }
-      h3 { color: #1f2937; }
-      .project-details { margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; row-gap: 10px; }
-      .project-detail-item { margin-bottom: 10px; }
-      .project-detail-label { font-weight: bold; color: #6b7280; }
-      .total-section { margin-top: 30px; border-top: 2px solid #e5e7eb; padding-top: 20px; }
-      .grand-total { font-size: 18px; font-weight: bold; color: #1f2937; }
-      .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 14px; color: #6b7280; text-align: center; }
+      body { 
+        font-family: Arial, sans-serif; 
+        line-height: 1.6; 
+        color: #333; 
+        margin: 0;
+        padding: 0;
+      }
+      .container { 
+        max-width: 650px; 
+        margin: 0 auto; 
+        padding: 20px; 
+      }
+      .header { 
+        text-align: center; 
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      h1 { 
+        color: #2563eb; 
+        margin-top: 0;
+      }
+      h2 { 
+        color: #1f2937; 
+        margin-top: 30px; 
+      }
+      h3 { 
+        color: #1f2937; 
+      }
+      .footer { 
+        margin-top: 40px; 
+        padding-top: 20px; 
+        border-top: 1px solid #e5e7eb; 
+        font-size: 14px; 
+        color: #6b7280; 
+        text-align: center; 
+      }
     </style>
   `;
 }
@@ -238,6 +249,7 @@ export function generateEstimateEmailHtml(estimateData: any, contactInfo: any): 
     <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Your Paint Pro Estimate</title>
         ${generateEmailStyles()}
       </head>
@@ -251,7 +263,9 @@ export function generateEstimateEmailHtml(estimateData: any, contactInfo: any): 
           ${generateProjectDetailsHtml(contactInfo)}
           
           <div>
-            <h2>Rooms Breakdown</h2>
+            <h2 style="color: #1f2937; font-size: 20px; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+              Rooms Breakdown
+            </h2>
             <div>
               ${generateAllRoomCardsHtml(estimateData.rooms)}
             </div>

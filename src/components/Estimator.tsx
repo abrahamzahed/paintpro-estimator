@@ -73,6 +73,7 @@ const Estimator = () => {
               emailSent={emailSent}
               onSaveEstimate={handleSaveEstimate}
               onSendEstimateEmail={handleSendEstimateEmail}
+              onReset={handleReset}
             />
           )}
         </div>

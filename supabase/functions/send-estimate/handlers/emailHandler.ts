@@ -19,7 +19,8 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     const { estimateData, contactInfo } = emailData;
 
     console.log("Estimate ID:", estimateId);
-    console.log("Contact Info:", contactInfo);
+    console.log("Contact Info:", JSON.stringify(contactInfo, null, 2));
+    console.log("Number of rooms in estimate:", estimateData.rooms.length);
     
     // Create HTML content for the email
     const emailHtml = generateEstimateEmailHtml(estimateData, contactInfo);
@@ -36,7 +37,7 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     const emailResponse = await resend.emails.send({
       from: "Paint Pro Estimator <onboarding@resend.dev>",
       to: [contactInfo.email],
-      subject: `Your Paint Pro Estimate: ${contactInfo.projectName}`,
+      subject: `Your Paint Pro Estimate: ${contactInfo.projectName || 'New Project'}`,
       html: emailHtml,
     });
 
@@ -51,10 +52,12 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     const logResponse = await logEmailToDatabase(
       estimateId,
       contactInfo.email,
-      `Your Paint Pro Estimate: ${contactInfo.projectName}`,
+      `Your Paint Pro Estimate: ${contactInfo.projectName || 'New Project'}`,
       'estimate-email',
       { estimateId: estimateId }
     );
+
+    console.log("Email logged to database with ID:", logResponse?.id);
 
     return new Response(
       JSON.stringify({ 

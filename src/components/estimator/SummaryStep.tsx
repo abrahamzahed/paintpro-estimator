@@ -2,6 +2,8 @@
 import React from 'react';
 import { EstimateSummary } from './EstimateSummary';
 import { EstimatorSummary } from '@/types/estimator';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle } from 'lucide-react';
 
 interface SummaryStepProps {
   summary: EstimatorSummary;
@@ -10,6 +12,7 @@ interface SummaryStepProps {
   emailSent: boolean;
   onSaveEstimate: () => void;
   onSendEstimateEmail: () => void;
+  onReset: () => void;
 }
 
 export const SummaryStep: React.FC<SummaryStepProps> = ({
@@ -18,7 +21,8 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
   sendingEmail,
   emailSent,
   onSaveEstimate,
-  onSendEstimateEmail
+  onSendEstimateEmail,
+  onReset
 }) => {
   return (
     <div className="animate-fade-in">
@@ -35,6 +39,21 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
         onSaveEstimate={onSaveEstimate}
         onSendEstimateEmail={onSendEstimateEmail}
       />
+
+      <div className="mt-8 border-t border-gray-200 pt-6">
+        <Button
+          variant="destructive"
+          className="flex items-center gap-2"
+          onClick={() => {
+            if (window.confirm('Are you sure you want to reset your estimate? All data will be lost.')) {
+              onReset();
+            }
+          }}
+        >
+          <AlertTriangle size={16} />
+          Reset Estimate
+        </Button>
+      </div>
     </div>
   );
 };
