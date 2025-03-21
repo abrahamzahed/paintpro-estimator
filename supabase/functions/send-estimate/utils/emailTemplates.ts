@@ -93,7 +93,7 @@ export function generateEstimateEmailHtml(estimateData: any, contactInfo: any): 
             
             <div>
               <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Stair Railing:</p>
-              <p style="margin: 5px 0;">${formatOption(room.options.stairRailing)}</p>
+              <p style="margin: 5px 0;">${room.options.stairRailing ? 'Included' : 'Not included'}</p>
             </div>
             
             <div>
@@ -108,7 +108,7 @@ export function generateEstimateEmailHtml(estimateData: any, contactInfo: any): 
             
             <div>
               <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Millwork Priming:</p>
-              <p style="margin: 5px 0;">${formatOption(room.options.millworkPriming)}</p>
+              <p style="margin: 5px 0;">${room.options.millworkPriming ? 'Included' : 'Not needed'}</p>
             </div>
             
             <div>
@@ -148,9 +148,9 @@ export function generateEstimateEmailHtml(estimateData: any, contactInfo: any): 
           h1 { color: #2563eb; }
           h2 { color: #1f2937; margin-top: 30px; }
           h3 { color: #1f2937; }
-          .project-details { margin-bottom: 30px; }
-          .project-details dt { font-weight: bold; margin-top: 10px; }
-          .project-details dd { margin-left: 0; margin-bottom: 5px; }
+          .project-details { margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; row-gap: 10px; }
+          .project-detail-item { margin-bottom: 10px; }
+          .project-detail-label { font-weight: bold; color: #6b7280; }
           .total-section { margin-top: 30px; border-top: 2px solid #e5e7eb; padding-top: 20px; }
           .grand-total { font-size: 18px; font-weight: bold; color: #1f2937; }
           .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 14px; color: #6b7280; text-align: center; }
@@ -163,27 +163,37 @@ export function generateEstimateEmailHtml(estimateData: any, contactInfo: any): 
             <p>Thank you for using our estimation service!</p>
           </div>
           
+          <h2>Project Details</h2>
           <div class="project-details">
-            <h2>Project Details</h2>
-            <dl>
-              <dt>Project Name:</dt>
-              <dd>${contactInfo.projectName || "New Project"}</dd>
-              
-              <dt>Client:</dt>
-              <dd>${contactInfo.fullName}</dd>
-              
-              <dt>Email:</dt>
-              <dd>${contactInfo.email}</dd>
-              
-              <dt>Phone:</dt>
-              <dd>${contactInfo.phone}</dd>
-              
-              <dt>Address:</dt>
-              <dd>${contactInfo.address}</dd>
-              
-              <dt>Date:</dt>
-              <dd>${new Date().toLocaleDateString()}</dd>
-            </dl>
+            <div class="project-detail-item">
+              <div class="project-detail-label">Project Name:</div>
+              <div>${contactInfo.projectName || "New Project"}</div>
+            </div>
+            
+            <div class="project-detail-item">
+              <div class="project-detail-label">Client:</div>
+              <div>${contactInfo.fullName}</div>
+            </div>
+            
+            <div class="project-detail-item">
+              <div class="project-detail-label">Email:</div>
+              <div>${contactInfo.email}</div>
+            </div>
+            
+            <div class="project-detail-item">
+              <div class="project-detail-label">Phone:</div>
+              <div>${contactInfo.phone}</div>
+            </div>
+            
+            <div class="project-detail-item">
+              <div class="project-detail-label">Address:</div>
+              <div>${contactInfo.address}</div>
+            </div>
+            
+            <div class="project-detail-item">
+              <div class="project-detail-label">Date:</div>
+              <div>${new Date().toLocaleDateString()}</div>
+            </div>
           </div>
           
           <div>

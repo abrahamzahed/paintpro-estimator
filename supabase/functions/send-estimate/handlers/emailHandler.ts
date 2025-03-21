@@ -23,6 +23,7 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     
     // Create HTML content for the email
     const emailHtml = generateEstimateEmailHtml(estimateData, contactInfo);
+    console.log("Generated email HTML for estimate");
     
     // Validate that we have a valid recipient email
     if (!contactInfo.email || !contactInfo.email.includes('@')) {
