@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RoomDetail } from '@/types/estimator';
@@ -17,6 +17,13 @@ export const RoomDiscountsOptions: React.FC<RoomDiscountsOptionsProps> = ({
   shouldDisableMillworkPriming,
   onOptionChange,
 }) => {
+  // Effect to ensure millwork priming is unchecked when disabled
+  useEffect(() => {
+    if (shouldDisableMillworkPriming && options.millworkPriming) {
+      onOptionChange('millworkPriming', false);
+    }
+  }, [shouldDisableMillworkPriming, options.millworkPriming, onOptionChange]);
+
   return (
     <div className="form-input-wrapper">
       <Label className="form-label">Room Discounts & Options</Label>
@@ -51,7 +58,7 @@ export const RoomDiscountsOptions: React.FC<RoomDiscountsOptionsProps> = ({
         <div className="flex items-center gap-2">
           <Checkbox 
             id={`millworkPriming-${roomId}`}
-            checked={options.millworkPriming}
+            checked={shouldDisableMillworkPriming ? false : options.millworkPriming}
             disabled={shouldDisableMillworkPriming}
             onCheckedChange={(checked) => onOptionChange('millworkPriming', checked as boolean)}
             className={shouldDisableMillworkPriming ? "opacity-50" : ""}
