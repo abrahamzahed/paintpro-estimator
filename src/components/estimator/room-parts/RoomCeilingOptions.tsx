@@ -13,6 +13,12 @@ export const RoomCeilingOptions: React.FC<RoomCeilingOptionsProps> = ({
   options,
   onOptionChange,
 }) => {
+  // Prevent default checkbox behavior that might cause page jumps
+  const handleCheckboxChange = (option: keyof RoomDetail['options'], checked: boolean) => {
+    // Prevent default browser behavior
+    onOptionChange(option, checked);
+  };
+
   return (
     <div className="form-input-wrapper">
       <Label className="form-label">Ceiling Options</Label>
@@ -21,7 +27,7 @@ export const RoomCeilingOptions: React.FC<RoomCeilingOptionsProps> = ({
           <Checkbox 
             id="highCeiling" 
             checked={options.highCeiling}
-            onCheckedChange={(checked) => onOptionChange('highCeiling', checked as boolean)}
+            onCheckedChange={(checked) => handleCheckboxChange('highCeiling', checked as boolean)}
           />
           <Label htmlFor="highCeiling" className="cursor-pointer">High Ceiling (+$600)</Label>
         </div>
@@ -30,7 +36,7 @@ export const RoomCeilingOptions: React.FC<RoomCeilingOptionsProps> = ({
           <Checkbox 
             id="paintCeiling" 
             checked={options.paintCeiling}
-            onCheckedChange={(checked) => onOptionChange('paintCeiling', checked as boolean)}
+            onCheckedChange={(checked) => handleCheckboxChange('paintCeiling', checked as boolean)}
           />
           <Label htmlFor="paintCeiling" className="cursor-pointer">Paint Ceiling (+40%)</Label>
         </div>

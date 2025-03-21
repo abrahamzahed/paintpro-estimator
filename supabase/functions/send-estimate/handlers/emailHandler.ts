@@ -26,7 +26,7 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     
     // Validate that we have a valid recipient email
     if (!contactInfo.email || !contactInfo.email.includes('@')) {
-      throw new Error("Invalid recipient email address");
+      throw new Error("Invalid recipient email address: " + contactInfo.email);
     }
     
     console.log("Sending email to:", contactInfo.email);
@@ -39,7 +39,12 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
       html: emailHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email API response:", JSON.stringify(emailResponse));
+    
+    if (emailResponse.error) {
+      console.error("Email sending failed with error:", emailResponse.error);
+      throw new Error(`Email sending failed: ${emailResponse.error.message}`);
+    }
     
     // Log the email to the database
     const logResponse = await logEmailToDatabase(

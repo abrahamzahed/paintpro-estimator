@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Mail, Loader2, CheckCircle, Save } from 'lucide-react';
+import { Loader2, CheckCircle, Save } from 'lucide-react';
 
 interface EstimateTotalsProps {
   subtotal: number;

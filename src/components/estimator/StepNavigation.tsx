@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Save, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 interface StepNavigationProps {
   currentStep: number;
@@ -38,24 +37,8 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
           Next <ChevronRight size={18} />
         </Button>
       ) : (
-        <div className="ml-auto">
-          {!estimateSaved ? (
-            <Button 
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-              onClick={onSaveEstimate}
-            >
-              <Save size={18} /> Save Estimate
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              className="inline-flex items-center gap-2 text-green-600 border-green-600"
-              disabled
-            >
-              <Check size={18} /> Estimate Saved
-            </Button>
-          )}
-        </div>
+        // Removed the Save Estimate button from here as it's now handled in the EstimateTotals component
+        <div className="ml-auto"></div>
       )}
     </div>
   );
