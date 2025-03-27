@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paint Pro Estimator - Iframe Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid #eaeaea;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      margin: 0;
+      color: #333;
+    }
+    
+    .info-box {
+      background-color: #e6f7ff;
+      border: 1px solid #91d5ff;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    
+    .iframe-container {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #eaeaea;
+      border-radius: 6px;
+    }
+    
+    iframe {
+      width: 100%;
+      border: none;
+      transition: height 0.3s ease;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 6px;
+    }
+    
+    button {
+      background-color: #1677ff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background-color: #0958d9;
+    }
+    
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Paint Pro Estimator - Iframe Integration Demo</h1>
+    </header>
+    
+    <div class="info-box">
+      <p>This page demonstrates how to embed the Paint Pro Estimator in an iframe. The parent page can communicate with the estimator using the window.postMessage API.</p>
+    </div>
+    
+    <div class="iframe-container">
+      <iframe id="estimator-iframe" src="/" height="800"></iframe>
+    </div>
+    
+    <div class="controls">
+      <button id="reset-btn">Reset Estimator</button>
+      <button id="prefill-btn">Prefill Contact Info</button>
+      <button id="next-btn">Next Step</button>
+      <button id="prev-btn">Previous Step</button>
+    </div>
+    
+    <div id="status" class="status" style="display: none;">
+      <p id="status-text"></p>
+    </div>
+  </div>
+  
+  <script>
+    // Get references to elements
+    const iframe = document.getElementById('estimator-iframe');
+    const resetBtn = document.getElementById('reset-btn');
+    const prefillBtn = document.getElementById('prefill-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const status = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+    
+    // Current step tracker
+    let currentStep = 1;
+    
+    // Listen for messages from the iframe
+    window.addEventListener('message', (event) => {
+      // Make sure the message is from our iframe
+      if (event.source !== iframe.contentWindow) return;
+      
+      const message = event.data;
+      
+      // Handle height adjustments
+      if (message.type === 'paintpro-estimator-height') {
+        iframe.style.height = `${message.height + 50}px`;
+      }
+      
+      // Handle step changes
+      if (message.type === 'paintpro-estimator-step') {
+        currentStep = message.step;
+        updateButtons();
+        
+        showStatus(`Current step: ${currentStep}`);
+      }
+      
+      // Handle saved estimates
+      if (message.type === 'paintpro-estimator-saved') {
+        showStatus(`Estimate saved! ID: ${message.estimateId}`);
+      }
+    });
+    
+    // Send a message to the iframe
+    function sendMessage(message) {
+      iframe.contentWindow.postMessage(message, '*');
+    }
+    
+    // Update button states based on current step
+    function updateButtons() {
+      nextBtn.disabled = currentStep >= 3;
+      prevBtn.disabled = currentStep <= 1;
+    }
+    
+    // Show status message
+    function showStatus(message) {
+      statusText.textContent = message;
+      status.style.display = 'block';
+      
+      // Hide the status after 5 seconds
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 5000);
+    }
+    
+    // Button click handlers
+    resetBtn.addEventListener('click', () => {
+      sendMessage({ type: 'paintpro-reset' });
+      showStatus('Estimator reset');
+    });
+    
+    prefillBtn.addEventListener('click', () => {
+      sendMessage({ 
+        type: 'paintpro-prefill-contact',
+        data: {
+          fullName: 'Jane Smith',
+          email: 'jane.smith@example.com',
+          phone: '555-123-4567',
+          address: '123 Main St, Anytown, USA',
+          projectName: 'Home Renovation'
+        }
+      });
+      showStatus('Contact info prefilled');
+    });
+    
+    nextBtn.addEventListener('click', () => {
+      sendMessage({ type: 'paintpro-next-step' });
+    });
+    
+    prevBtn.addEventListener('click', () => {
+      sendMessage({ type: 'paintpro-prev-step' });
+    });
+    
+    // Initialize button states
+    updateButtons();
+  </script>
+</body>
+</html>
