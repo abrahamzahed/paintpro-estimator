@@ -6,9 +6,6 @@ import { logEmailToDatabase } from "../services/databaseService.ts";
 
 // Initialize Resend with the API key
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-// Get the verified email (if any) from environment variables
-const VERIFIED_EMAIL = Deno.env.get("VERIFIED_EMAIL") || "abraham.zahed@gmail.com";
-const IS_PRODUCTION = Deno.env.get("IS_PRODUCTION") === "true";
 
 export async function handleSendEstimate(req: Request): Promise<Response> {
   try {
@@ -34,13 +31,8 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
       throw new Error("Invalid recipient email address: " + contactInfo.email);
     }
     
-    // Check if we need to redirect emails in development mode
-    const recipientEmail = IS_PRODUCTION ? contactInfo.email : VERIFIED_EMAIL;
-    const isRedirected = recipientEmail !== contactInfo.email;
-    
-    if (isRedirected) {
-      console.log(`Development mode: Redirecting email from ${contactInfo.email} to ${recipientEmail}`);
-    }
+    // Use the recipient's email directly without redirection
+    const recipientEmail = contactInfo.email;
     console.log("Sending email to:", recipientEmail);
     
     // Send the email with the correct domain (.io instead of .com)
@@ -56,16 +48,11 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     if (emailResponse.error) {
       console.error("Email sending failed with error:", emailResponse.error);
       
-      // Return more detailed error information
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: emailResponse.error.message,
-          details: "Email sending failed due to Resend API restrictions. In development, emails can only be sent to verified addresses.",
-          isRedirected,
-          originalRecipient: contactInfo.email,
-          actualRecipient: recipientEmail,
-          devMode: !IS_PRODUCTION
+          details: "Email sending failed. " + emailResponse.error.message
         }),
         {
           status: 200, // Return 200 even for email errors to allow the UI to handle it gracefully
@@ -80,13 +67,11 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     // Log the email to the database
     const logResponse = await logEmailToDatabase(
       estimateId,
-      contactInfo.email, // Log the original intended recipient
+      recipientEmail,
       `Your Paint Pro Estimate: ${contactInfo.projectName || 'New Project'}`,
       'estimate-email',
       { 
-        estimateId: estimateId,
-        isRedirected,
-        actualRecipient: recipientEmail 
+        estimateId: estimateId
       }
     );
 
@@ -95,15 +80,9 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: isRedirected ? 
-          "Estimate saved successfully. In development mode, the email was sent to the verified address instead of the recipient." : 
-          "Estimate sent successfully",
+        message: "Estimate sent successfully",
         emailId: emailResponse.id,
-        logId: logResponse?.id,
-        isRedirected,
-        originalRecipient: contactInfo.email,
-        actualRecipient: recipientEmail,
-        devMode: !IS_PRODUCTION
+        logId: logResponse?.id
       }),
       {
         status: 200,

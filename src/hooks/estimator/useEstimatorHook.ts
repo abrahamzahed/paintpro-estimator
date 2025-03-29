@@ -207,13 +207,7 @@ export const useEstimatorHook = () => {
         
         if (data && data.success) {
           setEmailSent(true);
-          
-          if (data.isRedirected) {
-            setEmailNotification(`Email could not be sent to ${contactInfo.email} due to development restrictions. It was sent to ${data.actualRecipient} instead.`);
-            toast.info('Estimate saved! Note: In development mode, emails are sent to verified addresses only.');
-          } else {
-            toast.success('Estimate saved and sent to your email!');
-          }
+          toast.success('Estimate saved and sent to your email!');
         } else {
           console.error("Email sending failed:", data);
           if (data && data.details) {
