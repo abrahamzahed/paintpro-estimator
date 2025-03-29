@@ -43,9 +43,9 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     }
     console.log("Sending email to:", recipientEmail);
     
-    // Send the email using Resend
+    // Send the email using Resend - now with the correct sender email
     const emailResponse = await resend.emails.send({
-      from: "Paint Pro Estimator <onboarding@resend.dev>",
+      from: "Paint Pro Estimator <estimate@paint-pro.io>",
       to: [recipientEmail],
       subject: `Your Paint Pro Estimate: ${contactInfo.projectName || 'New Project'}`,
       html: emailHtml,
