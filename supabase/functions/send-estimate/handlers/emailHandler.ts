@@ -43,7 +43,7 @@ export async function handleSendEstimate(req: Request): Promise<Response> {
     }
     console.log("Sending email to:", recipientEmail);
     
-    // Send the email using Resend - now with the correct sender email
+    // Send the email with the correct domain (.io instead of .com)
     const emailResponse = await resend.emails.send({
       from: "Paint Pro Estimator <estimate@paint-pro.io>",
       to: [recipientEmail],
