@@ -8,7 +8,14 @@
 [id*="watermark"],
 [id*="gpt"],
 div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"],
-div[style*="position:fixed"][style*="bottom:0"][style*="right:0"] {
+div[style*="position:fixed"][style*="bottom:0"][style*="right:0"],
+.lovable-watermark, 
+.gpt-watermark, 
+.edit-button-overlay, 
+[data-testid="lovable-watermark"], 
+[data-lovable="watermark"],
+a[href*="lovable.dev"],
+a[href*="gptengineer.app"] {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;

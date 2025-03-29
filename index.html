@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,6 +8,26 @@
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Additional style to prevent watermark elements -->
+    <style>
+      /* CSS to hide any watermark elements that might be injected */
+      .lovable-watermark, 
+      .gpt-watermark, 
+      .edit-button-overlay, 
+      [data-testid="lovable-watermark"], 
+      [data-lovable="watermark"],
+      a[href*="lovable.dev"],
+      a[href*="gptengineer.app"],
+      div[class*="watermark"],
+      div[id*="watermark"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+    </style>
+    
     <script>
       // Remove any watermark elements that might be injected
       window.addEventListener('DOMContentLoaded', function() {
