@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide any potential watermark elements */
+[class*="watermark"],
+[class*="gpt"],
+[id*="watermark"],
+[id*="gpt"],
+div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"],
+div[style*="position:fixed"][style*="bottom:0"][style*="right:0"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  max-height: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  z-index: -9999 !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -17,6 +17,21 @@ const App = () => {
     } else {
       document.documentElement.removeAttribute('data-in-iframe');
     }
+    
+    // Remove any watermark elements
+    const removeWatermarks = () => {
+      const elements = document.querySelectorAll('[class*="watermark"], [class*="gpt"], [id*="watermark"], [id*="gpt"], div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"]');
+      elements.forEach((el) => {
+        if (el.id !== 'root') {
+          el.remove();
+        }
+      });
+    };
+    
+    removeWatermarks();
+    const interval = setInterval(removeWatermarks, 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   return (
