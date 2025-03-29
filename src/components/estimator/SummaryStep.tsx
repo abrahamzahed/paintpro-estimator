@@ -10,6 +10,7 @@ interface SummaryStepProps {
   estimateSaved: boolean;
   sendingEmail: boolean;
   emailSent: boolean;
+  emailNotification?: string | null;
   onSaveEstimate: () => void;
   onSendEstimateEmail: () => void;
   onReset: () => void;
@@ -20,6 +21,7 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
   estimateSaved,
   sendingEmail,
   emailSent,
+  emailNotification,
   onSaveEstimate,
   onSendEstimateEmail,
   onReset
@@ -36,6 +38,7 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({
         estimateSaved={estimateSaved}
         sendingEmail={sendingEmail}
         emailSent={emailSent}
+        emailNotification={emailNotification}
         onSaveEstimate={onSaveEstimate}
         onSendEstimateEmail={onSendEstimateEmail}
       />

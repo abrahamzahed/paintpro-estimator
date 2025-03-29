@@ -11,6 +11,7 @@ interface EstimateSummaryProps {
   estimateSaved: boolean;
   sendingEmail: boolean;
   emailSent: boolean;
+  emailNotification?: string | null;
   onSaveEstimate: () => void;
   onSendEstimateEmail: () => void;
 }
@@ -20,6 +21,7 @@ export const EstimateSummary: React.FC<EstimateSummaryProps> = ({
   estimateSaved,
   sendingEmail,
   emailSent,
+  emailNotification,
   onSaveEstimate,
   onSendEstimateEmail,
 }) => {
@@ -30,6 +32,7 @@ export const EstimateSummary: React.FC<EstimateSummaryProps> = ({
       <SavedEstimateMessage 
         estimateSaved={estimateSaved} 
         emailSent={emailSent}
+        emailNotification={emailNotification}
       />
       
       <ProjectDetails 

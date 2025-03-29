@@ -1,15 +1,17 @@
 
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Info } from 'lucide-react';
 
 interface SavedEstimateMessageProps {
   estimateSaved: boolean;
   emailSent?: boolean;
+  emailNotification?: string | null;
 }
 
 export const SavedEstimateMessage: React.FC<SavedEstimateMessageProps> = ({ 
   estimateSaved, 
-  emailSent = false 
+  emailSent = false,
+  emailNotification = null 
 }) => {
   if (!estimateSaved) return null;
   
@@ -22,6 +24,13 @@ export const SavedEstimateMessage: React.FC<SavedEstimateMessageProps> = ({
           Your estimate has been saved to our database.
           {emailSent && " It has also been sent to the client via email."}
         </p>
+        
+        {emailNotification && (
+          <div className="flex items-center gap-2 mt-2 p-2 bg-blue-50 rounded-md border border-blue-100">
+            <Info size={16} className="text-blue-500 flex-shrink-0" />
+            <p className="text-blue-700 text-xs">{emailNotification}</p>
+          </div>
+        )}
       </div>
     </div>
   );

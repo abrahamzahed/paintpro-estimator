@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { PaintBucket } from 'lucide-react';
 import { useEstimator } from '@/hooks/useEstimator';
@@ -28,6 +27,7 @@ const Estimator = () => {
     sendingEmail,
     emailSent,
     savedEstimateId,
+    emailNotification,
     setContactInfo,
     handleAddRoom,
     handleUpdateRoom,
@@ -143,6 +143,7 @@ const Estimator = () => {
               estimateSaved={estimateSaved}
               sendingEmail={sendingEmail}
               emailSent={emailSent}
+              emailNotification={emailNotification}
               onSaveEstimate={handleSaveEstimate}
               onSendEstimateEmail={handleSendEstimateEmail}
               onReset={handleReset}
