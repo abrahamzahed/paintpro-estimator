@@ -33,40 +33,58 @@
     </style>
     
     <script>
-      // Safer approach to remove watermarks
+      // DOM-Safe watermark handling
       window.addEventListener('DOMContentLoaded', function() {
+        // Create a registry of elements we've processed to avoid double-processing
+        const processedElements = new WeakSet();
+        
         function safelyRemoveWatermarks() {
           try {
-            const elements = document.querySelectorAll('[class*="watermark"], [class*="gpt"], [id*="watermark"], [id*="gpt"], [style*="fixed"]');
+            // Only select specific watermark classes instead of broad selectors
+            const watermarkSelectors = [
+              '.lovable-watermark', 
+              '.gpt-watermark', 
+              '.edit-button-overlay', 
+              '[data-testid="lovable-watermark"]', 
+              '[data-lovable="watermark"]',
+              'a[href*="lovable.dev"]',
+              'a[href*="gptengineer.app"]'
+            ];
+            
+            const elements = document.querySelectorAll(watermarkSelectors.join(','));
+            
             elements.forEach(function(el) {
-              // Skip important elements
-              if (el.id === 'root' || !el.parentNode) {
+              // Skip if already processed or is a critical element
+              if (processedElements.has(el) || el.id === 'root' || !el.parentNode) {
                 return;
               }
               
-              // Hide elements first with inline styles
+              // Mark as processed
+              processedElements.add(el);
+              
+              // Just hide the element instead of removing it
               el.style.display = 'none';
               el.style.visibility = 'hidden';
               el.style.opacity = '0';
+              el.style.pointerEvents = 'none';
+              el.style.height = '0';
+              el.style.width = '0';
+              el.style.position = 'absolute';
+              el.style.overflow = 'hidden';
+              el.setAttribute('aria-hidden', 'true');
               
-              // Only try to remove if the element is still a child of its parent
-              if (el.parentNode && el.parentNode.contains(el)) {
-                try {
-                  el.parentNode.removeChild(el);
-                } catch (e) {
-                  // Element is already hidden
-                }
-              }
+              // We'll avoid removeChild for now as it's causing issues
+              // Just hiding elements is enough in most cases
             });
           } catch (error) {
-            // Silently fail to avoid breaking the page
+            // Silent fail to avoid breaking the app
           }
         }
         
-        // Run with delay
-        setTimeout(safelyRemoveWatermarks, 2000);
-        // Use longer interval to avoid too frequent DOM operations
-        setInterval(safelyRemoveWatermarks, 10000);
+        // Run once after a delay to let React initialize
+        setTimeout(safelyRemoveWatermarks, 3000);
+        // Run periodically but less frequently
+        setInterval(safelyRemoveWatermarks, 15000);
       });
     </script>
     

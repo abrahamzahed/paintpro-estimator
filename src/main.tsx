@@ -3,12 +3,10 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Function to safely remove any watermark-related elements
-const removeWatermarkElements = () => {
+// Safer approach that doesn't manipulate the DOM directly
+const safelyHideWatermarks = () => {
   try {
-    console.error('Running watermark removal safely');
-    
-    // List of possible watermark selectors
+    // More specific selectors to reduce risk of affecting legitimate elements
     const selectors = [
       '.lovable-watermark',
       '.gpt-watermark',
@@ -16,61 +14,63 @@ const removeWatermarkElements = () => {
       '[data-testid="lovable-watermark"]',
       '[data-lovable="watermark"]',
       'a[href*="lovable.dev"]',
-      'a[href*="gptengineer.app"]',
-      'div[class*="watermark"]',
-      'div[id*="watermark"]',
-      // Target the common bottom-right positioned elements
-      'div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"]',
-      'a[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"]'
+      'a[href*="gptengineer.app"]'
     ];
     
-    // Instead of removing elements, hide them with CSS first
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(element => {
-        if (element && element.id !== 'root') {
-          // Cast element to HTMLElement to access style property
-          const htmlElement = element as HTMLElement;
-          // Apply inline styles to hide the element first
-          htmlElement.style.display = 'none';
-          htmlElement.style.visibility = 'hidden';
-          htmlElement.style.opacity = '0';
-          htmlElement.style.pointerEvents = 'none';
-          htmlElement.style.height = '0';
-          htmlElement.style.width = '0';
-          htmlElement.style.overflow = 'hidden';
-          
-          // Optional: Only attempt to remove if it still has a parent
-          try {
-            // Check if element has a parent and that the parent still contains it
-            if (element.parentNode && element.parentNode.contains(element)) {
-              element.parentNode.removeChild(element);
-            }
-          } catch (err) {
-            // If removal fails, it's already hidden anyway
-            console.error('Could not remove element, but it is hidden:', err);
-          }
-        }
-      });
+    // Track which elements we've already processed
+    const processedElements = new WeakSet();
+    
+    // Use a single query for better performance
+    document.querySelectorAll(selectors.join(',')).forEach(element => {
+      // Skip if already processed or is a critical element
+      if (processedElements.has(element) || element.id === 'root') {
+        return;
+      }
+      
+      // Mark as processed
+      processedElements.add(element);
+      
+      // Cast element to HTMLElement to access style property
+      const htmlElement = element as HTMLElement;
+      
+      // Apply CSS hiding only, no DOM removal
+      htmlElement.style.display = 'none';
+      htmlElement.style.visibility = 'hidden';
+      htmlElement.style.opacity = '0';
+      htmlElement.style.pointerEvents = 'none';
+      htmlElement.style.height = '0';
+      htmlElement.style.width = '0';
+      htmlElement.style.position = 'absolute';
+      htmlElement.style.overflow = 'hidden';
+      htmlElement.setAttribute('aria-hidden', 'true');
+      
+      // No DOM manipulation via removeChild
     });
     
-    // Handle scripts more carefully
+    // Handle scripts more carefully - just disable them without removing
     document.querySelectorAll('script[src*="lovable"], script[src*="gpteng"]').forEach(script => {
       try {
         // Cast script to HTMLScriptElement to access src property
         const scriptElement = script as HTMLScriptElement;
-        // Only remove if it's not our required script
-        if (scriptElement.src !== "https://cdn.gpteng.co/gptengineer.js" && script.parentNode) {
-          // Check if the script is still in the document
-          if (script.parentNode.contains(script)) {
-            script.parentNode.removeChild(script);
+        
+        // Only process if it's not our required script
+        if (scriptElement.src !== "https://cdn.gpteng.co/gptengineer.js") {
+          // Mark the script as processed
+          if (!processedElements.has(script)) {
+            processedElements.add(script);
+            
+            // Disable the script by nullifying its src and removing content
+            // This is safer than DOM removal
+            scriptElement.setAttribute('disabled', 'true');
+            scriptElement.setAttribute('type', 'text/plain');
           }
         }
       } catch (err) {
-        console.error('Error removing script:', err);
+        // Silent fail
       }
     });
   } catch (error) {
-    console.error('Error in watermark removal:', error);
+    // Silent fail
   }
 };
 
@@ -80,9 +80,9 @@ if (rootElement) {
   // Create React root before doing any DOM manipulations
   createRoot(rootElement).render(<App />);
   
-  // Run watermark removal after a short delay to let React finish rendering
-  setTimeout(removeWatermarkElements, 1500);
+  // Run watermark handling after a delay to let React finish rendering
+  setTimeout(safelyHideWatermarks, 3000);
   
   // Set up a less aggressive interval for periodic checks
-  setInterval(removeWatermarkElements, 5000);
+  setInterval(safelyHideWatermarks, 15000);
 }
