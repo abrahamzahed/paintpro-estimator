@@ -25,22 +25,45 @@
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        max-height: 0 !important;
+        max-width: 0 !important;
       }
     </style>
     
     <script>
-      // Remove any watermark elements that might be injected
+      // Safer approach to remove watermarks
       window.addEventListener('DOMContentLoaded', function() {
-        function removeWatermarks() {
-          const elements = document.querySelectorAll('[class*="watermark"], [class*="gpt"], [id*="watermark"], [id*="gpt"], [style*="fixed"]');
-          elements.forEach(function(el) {
-            if (el.id !== 'root') el.remove();
-          });
+        function safelyRemoveWatermarks() {
+          try {
+            const elements = document.querySelectorAll('[class*="watermark"], [class*="gpt"], [id*="watermark"], [id*="gpt"], [style*="fixed"]');
+            elements.forEach(function(el) {
+              if (el.id !== 'root') {
+                // Hide first
+                el.style.display = 'none';
+                el.style.visibility = 'hidden';
+                el.style.opacity = '0';
+                
+                // Then try to remove if it has a parent
+                if (el.parentNode) {
+                  try {
+                    el.parentNode.removeChild(el);
+                  } catch (e) {
+                    // Element is already hidden
+                  }
+                }
+              }
+            });
+          } catch (error) {
+            // Silently fail to avoid breaking the page
+          }
         }
         
-        removeWatermarks();
-        // Keep checking periodically to remove any dynamically added watermarks
-        setInterval(removeWatermarks, 500);
+        // Run with delay
+        setTimeout(safelyRemoveWatermarks, 2000);
+        // Use longer interval to avoid too frequent DOM operations
+        setInterval(safelyRemoveWatermarks, 10000);
       });
     </script>
     
