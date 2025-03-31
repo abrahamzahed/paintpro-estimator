@@ -1,48 +1,12 @@
 
-import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-
-interface AddressAutocompleteProps {
-  value: string;
-  onChange: (value: string) => void;
-  label?: string;
-  placeholder?: string;
-  required?: boolean;
-  error?: string;
-  className?: string;
-  id?: string;
-}
-
-interface NominatimResult {
-  place_id: number;
-  licence: string;
-  osm_type: string;
-  osm_id: number;
-  boundingbox: string[];
-  lat: string;
-  lon: string;
-  display_name: string;
-  class: string;
-  type: string;
-  importance: number;
-  address: {
-    house_number?: string;
-    road?: string;
-    neighbourhood?: string;
-    suburb?: string;
-    city?: string;
-    county?: string;
-    state?: string;
-    postcode?: string;
-    country?: string;
-    country_code?: string;
-  };
-}
+import { useAddressAutocomplete } from "./address/useAddressAutocomplete";
+import SuggestionsList from "./address/SuggestionsList";
+import { AddressAutocompleteProps } from "./address/types";
 
 const AddressAutocomplete = ({
   value,
@@ -54,138 +18,18 @@ const AddressAutocomplete = ({
   className,
   id = "address"
 }: AddressAutocompleteProps) => {
-  const { toast } = useToast();
-  const [query, setQuery] = useState(value);
-  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
-  const [isFocused, setIsFocused] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (query.length >= 3) {
-        fetchSuggestions(query);
-      } else {
-        setSuggestions([]);
-      }
-    }, 500);
-
-    return () => {
-      clearTimeout(timeoutId);
-      // Cancel any ongoing requests
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [query]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current && 
-        !dropdownRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setSuggestions([]);
-        setIsFocused(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const fetchSuggestions = async (input: string) => {
-    if (input.trim().length < 3) return;
-    
-    // Cancel any previous requests
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create a new AbortController
-    abortControllerRef.current = new AbortController();
-    
-    setIsLoading(true);
-    try {
-      const response = await axios.get("https://nominatim.openstreetmap.org/search", {
-        params: {
-          q: input + ", Washington, USA",
-          format: "json",
-          addressdetails: 1,
-          limit: 5,
-          countrycodes: "us",
-          state: "washington"
-        },
-        headers: {
-          "User-Agent": "PaintPro Web Application",
-          "Accept-Language": "en-US,en;q=0.9"
-        },
-        signal: abortControllerRef.current.signal
-      });
-      
-      // Filter results to only include addresses in Washington state
-      const waResults = response.data.filter((result: NominatimResult) => {
-        return result.address?.state?.toLowerCase() === "washington";
-      });
-      
-      setSuggestions(waResults);
-    } catch (error) {
-      // Don't show error for aborted requests
-      if (axios.isCancel(error)) {
-        console.log('Request canceled:', error.message);
-        return;
-      }
-      
-      console.error("Error fetching address suggestions:", error);
-      toast({
-        title: "Error fetching addresses",
-        description: "Could not load address suggestions. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    onChange(value);
-  };
-
-  const formatAddress = (suggestion: NominatimResult): string => {
-    const address = suggestion.address;
-    const parts = [];
-
-    if (address.house_number) parts.push(address.house_number);
-    if (address.road) parts.push(address.road);
-    
-    if (address.city) parts.push(address.city);
-    
-    if (address.state) parts.push(address.state);
-    
-    if (address.postcode) parts.push(address.postcode);
-    
-    return parts.join(", ");
-  };
-
-  const handleSelect = (suggestion: NominatimResult) => {
-    const selectedAddress = formatAddress(suggestion);
-    setQuery(selectedAddress);
-    onChange(selectedAddress);
-    setSuggestions([]);
-    setIsFocused(false);
-  };
-
-  const handleRetry = () => {
-    if (query.length >= 3) {
-      fetchSuggestions(query);
-    }
-  };
+  
+  const {
+    query,
+    suggestions,
+    isLoading,
+    isFocused,
+    setIsFocused,
+    handleInputChange,
+    handleSelect
+  } = useAddressAutocomplete(value, onChange);
 
   return (
     <div className={cn("space-y-2 relative", className)}>
@@ -220,25 +64,11 @@ const AddressAutocomplete = ({
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
       
       {suggestions.length > 0 && isFocused && (
-        <div 
-          ref={dropdownRef}
-          className="absolute z-10 mt-1 w-full bg-background rounded-md shadow-lg border border-input overflow-hidden"
-        >
-          <ul className="py-1 max-h-60 overflow-auto">
-            {suggestions.map((suggestion) => (
-              <li
-                key={suggestion.place_id}
-                onClick={() => handleSelect(suggestion)}
-                className="px-4 py-2 hover:bg-muted cursor-pointer text-sm"
-              >
-                {formatAddress(suggestion)}
-              </li>
-            ))}
-          </ul>
-          <div className="px-4 py-2 text-xs text-muted-foreground border-t">
-            Data provided by OpenStreetMap | WA addresses only
-          </div>
-        </div>
+        <SuggestionsList 
+          suggestions={suggestions} 
+          onSelect={handleSelect} 
+          dropdownRef={dropdownRef} 
+        />
       )}
     </div>
   );
