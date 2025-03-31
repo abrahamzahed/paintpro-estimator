@@ -54,6 +54,8 @@ export const RoomBaseboardOptions: React.FC<RoomBaseboardOptionsProps> = ({
           value={baseboardInstallationFeet}
           onChange={onBaseboardInstallationChange}
           className="form-input"
+          autoSelectOnFocus={true}
+          integerOnly={true}
         />
       </div>
     </>

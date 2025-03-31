@@ -28,6 +28,8 @@ export const RoomClosets: React.FC<RoomClosetsProps> = ({
             value={closets.walkInCount}
             onChange={(e) => onClosetCountChange('walkInCount', e)}
             className="form-input"
+            autoSelectOnFocus={true}
+            integerOnly={true}
           />
         </div>
         <div>
@@ -39,6 +41,8 @@ export const RoomClosets: React.FC<RoomClosetsProps> = ({
             value={closets.regularCount}
             onChange={(e) => onClosetCountChange('regularCount', e)}
             className="form-input"
+            autoSelectOnFocus={true}
+            integerOnly={true}
           />
         </div>
       </div>

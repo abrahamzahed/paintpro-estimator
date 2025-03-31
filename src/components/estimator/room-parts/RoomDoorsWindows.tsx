@@ -45,6 +45,8 @@ export const RoomDoorsWindows: React.FC<RoomDoorsWindowsProps> = ({
               value={doors.count}
               onChange={onDoorCountChange}
               className="form-input"
+              autoSelectOnFocus={true}
+              integerOnly={true}
             />
           </div>
           <div>
@@ -80,6 +82,8 @@ export const RoomDoorsWindows: React.FC<RoomDoorsWindowsProps> = ({
               value={windows.count}
               onChange={onWindowCountChange}
               className="form-input"
+              autoSelectOnFocus={true}
+              integerOnly={true}
             />
           </div>
           <div>
