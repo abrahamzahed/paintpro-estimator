@@ -28,14 +28,16 @@ const removeWatermarkElements = () => {
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(element => {
         if (element && element.parentNode) {
+          // Cast element to HTMLElement to access style property
+          const htmlElement = element as HTMLElement;
           // Apply inline styles to hide the element first
-          element.style.display = 'none';
-          element.style.visibility = 'hidden';
-          element.style.opacity = '0';
-          element.style.pointerEvents = 'none';
-          element.style.height = '0';
-          element.style.width = '0';
-          element.style.overflow = 'hidden';
+          htmlElement.style.display = 'none';
+          htmlElement.style.visibility = 'hidden';
+          htmlElement.style.opacity = '0';
+          htmlElement.style.pointerEvents = 'none';
+          htmlElement.style.height = '0';
+          htmlElement.style.width = '0';
+          htmlElement.style.overflow = 'hidden';
           
           // Optional: Only attempt to remove if it still has a parent
           try {
@@ -53,8 +55,10 @@ const removeWatermarkElements = () => {
     // Handle scripts more carefully
     document.querySelectorAll('script[src*="lovable"], script[src*="gpteng"]').forEach(script => {
       try {
+        // Cast script to HTMLScriptElement to access src property
+        const scriptElement = script as HTMLScriptElement;
         // Only remove if it's not our required script
-        if (script.src !== "https://cdn.gpteng.co/gptengineer.js" && script.parentNode) {
+        if (scriptElement.src !== "https://cdn.gpteng.co/gptengineer.js" && script.parentNode) {
           script.parentNode.removeChild(script);
         }
       } catch (err) {

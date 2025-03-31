@@ -45,11 +45,13 @@ const App = () => {
           document.querySelectorAll(selector).forEach(element => {
             // Make sure we're not affecting our main app
             if (element.id !== 'root' && element.parentNode) {
+              // Cast element to HTMLElement to access style property
+              const htmlElement = element as HTMLElement;
               // Hide with CSS first
-              element.style.display = 'none';
-              element.style.visibility = 'hidden'; 
-              element.style.opacity = '0';
-              element.style.pointerEvents = 'none';
+              htmlElement.style.display = 'none';
+              htmlElement.style.visibility = 'hidden'; 
+              htmlElement.style.opacity = '0';
+              htmlElement.style.pointerEvents = 'none';
               
               // Only try to remove if it's safe
               try {
