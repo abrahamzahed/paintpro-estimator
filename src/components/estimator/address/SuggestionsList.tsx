@@ -31,7 +31,7 @@ const SuggestionsList: React.FC<SuggestionsListProps> = ({
         ))}
       </ul>
       <div className="px-4 py-2 text-xs text-muted-foreground border-t">
-        Data provided by OpenStreetMap | US addresses only
+        Data provided by OpenStreetMap | WA addresses only
       </div>
     </div>
   );

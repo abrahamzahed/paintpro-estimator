@@ -79,7 +79,7 @@ export function useAddressAutocomplete(
           addressdetails: 1,
           limit: 5,
           countrycodes: "us", // Only include US addresses
-          // state parameter removed to allow all US states
+          state: "washington" // Reintroducing the Washington state parameter
         },
         headers: {
           "User-Agent": "PaintPro Web Application",
@@ -88,8 +88,12 @@ export function useAddressAutocomplete(
         signal: abortControllerRef.current.signal
       });
       
-      // No filtering by state anymore, using all US results
-      setSuggestions(response.data);
+      // Also filter results to ensure they're Washington addresses
+      const waResults = response.data.filter((result: NominatimResult) => {
+        return result.address?.state?.toLowerCase() === "washington";
+      });
+      
+      setSuggestions(waResults);
     } catch (error) {
       // Don't show error for aborted requests
       if (axios.isCancel(error)) {
