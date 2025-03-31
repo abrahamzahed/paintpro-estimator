@@ -53,9 +53,9 @@ const App = () => {
               htmlElement.style.opacity = '0';
               htmlElement.style.pointerEvents = 'none';
               
-              // Only try to remove if it's safe
+              // Only try to remove if it's still in the document
               try {
-                if (element.parentNode) {
+                if (element.parentNode && element.parentNode.contains(element)) {
                   element.parentNode.removeChild(element);
                 }
               } catch (err) {

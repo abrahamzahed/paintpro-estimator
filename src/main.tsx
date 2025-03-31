@@ -27,7 +27,7 @@ const removeWatermarkElements = () => {
     // Instead of removing elements, hide them with CSS first
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(element => {
-        if (element && element.parentNode) {
+        if (element && element.id !== 'root') {
           // Cast element to HTMLElement to access style property
           const htmlElement = element as HTMLElement;
           // Apply inline styles to hide the element first
@@ -41,7 +41,8 @@ const removeWatermarkElements = () => {
           
           // Optional: Only attempt to remove if it still has a parent
           try {
-            if (element.parentNode) {
+            // Check if element has a parent and that the parent still contains it
+            if (element.parentNode && element.parentNode.contains(element)) {
               element.parentNode.removeChild(element);
             }
           } catch (err) {
@@ -59,7 +60,10 @@ const removeWatermarkElements = () => {
         const scriptElement = script as HTMLScriptElement;
         // Only remove if it's not our required script
         if (scriptElement.src !== "https://cdn.gpteng.co/gptengineer.js" && script.parentNode) {
-          script.parentNode.removeChild(script);
+          // Check if the script is still in the document
+          if (script.parentNode.contains(script)) {
+            script.parentNode.removeChild(script);
+          }
         }
       } catch (err) {
         console.error('Error removing script:', err);

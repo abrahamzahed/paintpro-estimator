@@ -39,19 +39,22 @@
           try {
             const elements = document.querySelectorAll('[class*="watermark"], [class*="gpt"], [id*="watermark"], [id*="gpt"], [style*="fixed"]');
             elements.forEach(function(el) {
-              if (el.id !== 'root') {
-                // Hide first
-                el.style.display = 'none';
-                el.style.visibility = 'hidden';
-                el.style.opacity = '0';
-                
-                // Then try to remove if it has a parent
-                if (el.parentNode) {
-                  try {
-                    el.parentNode.removeChild(el);
-                  } catch (e) {
-                    // Element is already hidden
-                  }
+              // Skip important elements
+              if (el.id === 'root' || !el.parentNode) {
+                return;
+              }
+              
+              // Hide elements first with inline styles
+              el.style.display = 'none';
+              el.style.visibility = 'hidden';
+              el.style.opacity = '0';
+              
+              // Only try to remove if the element is still a child of its parent
+              if (el.parentNode && el.parentNode.contains(el)) {
+                try {
+                  el.parentNode.removeChild(el);
+                } catch (e) {
+                  // Element is already hidden
                 }
               }
             });
