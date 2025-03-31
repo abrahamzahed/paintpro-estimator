@@ -28,7 +28,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
         <dd>{contactInfo.phone}</dd>
         
         <dt className="font-medium text-gray-600">Address:</dt>
-        <dd>{contactInfo.address}</dd>
+        <dd>{contactInfo.address} {!contactInfo.address.toLowerCase().includes('washington') ? '(Washington)' : ''}</dd>
         
         <dt className="font-medium text-gray-600">Rooms:</dt>
         <dd>{roomsCount}</dd>

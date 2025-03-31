@@ -98,18 +98,24 @@ const AddressAutocomplete = ({
     try {
       const response = await axios.get("https://nominatim.openstreetmap.org/search", {
         params: {
-          q: input,
+          q: input + ", Washington, USA", // Append Washington state to query
           format: "json",
           addressdetails: 1,
           limit: 5,
-          countrycodes: "us" // Restrict to United States only
+          countrycodes: "us", // Restrict to United States only
+          state: "washington" // Restrict to Washington state
         },
         headers: {
           "User-Agent": "PaintPro Web Application",
         },
       });
       
-      setSuggestions(response.data);
+      // Filter results to only include addresses in Washington state
+      const waResults = response.data.filter((result: NominatimResult) => {
+        return result.address?.state?.toLowerCase() === "washington";
+      });
+      
+      setSuggestions(waResults);
     } catch (error) {
       console.error("Error fetching address suggestions:", error);
       toast({
@@ -174,6 +180,7 @@ const AddressAutocomplete = ({
           placeholder={placeholder}
           className={cn(error ? "border-red-500" : "")}
           autoComplete="off"
+          autoSelectOnFocus={true}
         />
         
         {isLoading && (
@@ -202,7 +209,7 @@ const AddressAutocomplete = ({
             ))}
           </ul>
           <div className="px-4 py-2 text-xs text-muted-foreground border-t">
-            Data provided by OpenStreetMap
+            Data provided by OpenStreetMap | WA addresses only
           </div>
         </div>
       )}
