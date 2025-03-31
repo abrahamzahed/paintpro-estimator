@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ContactInfo } from '@/types/estimator';
-import AddressAutocomplete from './address/AddressAutocomplete';
+import AddressAutocomplete from '@/components/estimator/address/AddressAutocomplete';
 import { FormField } from './form/FormField';
 import { useContactForm } from './form/useContactForm';
 
