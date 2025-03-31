@@ -78,9 +78,8 @@ export function useAddressAutocomplete(
           format: "json",
           addressdetails: 1,
           limit: 5,
-          // Commented out US and WA restrictions to see if this is causing the issue
-          // countrycodes: "us",
-          // state: "washington"
+          countrycodes: "us", // Only include US addresses
+          // state parameter removed to allow all US states
         },
         headers: {
           "User-Agent": "PaintPro Web Application",
@@ -89,11 +88,7 @@ export function useAddressAutocomplete(
         signal: abortControllerRef.current.signal
       });
       
-      // Filter commented out to allow all results for testing
-      // const waResults = response.data.filter((result: NominatimResult) => {
-      //   return result.address?.state?.toLowerCase() === "washington";
-      // });
-      
+      // No filtering by state anymore, using all US results
       setSuggestions(response.data);
     } catch (error) {
       // Don't show error for aborted requests
