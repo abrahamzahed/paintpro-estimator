@@ -74,12 +74,13 @@ export function useAddressAutocomplete(
     try {
       const response = await axios.get("https://nominatim.openstreetmap.org/search", {
         params: {
-          q: input + ", Washington, USA",
+          q: input,
           format: "json",
           addressdetails: 1,
           limit: 5,
-          countrycodes: "us",
-          state: "washington"
+          // Commented out US and WA restrictions to see if this is causing the issue
+          // countrycodes: "us",
+          // state: "washington"
         },
         headers: {
           "User-Agent": "PaintPro Web Application",
@@ -88,12 +89,12 @@ export function useAddressAutocomplete(
         signal: abortControllerRef.current.signal
       });
       
-      // Filter results to only include addresses in Washington state
-      const waResults = response.data.filter((result: NominatimResult) => {
-        return result.address?.state?.toLowerCase() === "washington";
-      });
+      // Filter commented out to allow all results for testing
+      // const waResults = response.data.filter((result: NominatimResult) => {
+      //   return result.address?.state?.toLowerCase() === "washington";
+      // });
       
-      setSuggestions(waResults);
+      setSuggestions(response.data);
     } catch (error) {
       // Don't show error for aborted requests
       if (axios.isCancel(error)) {
