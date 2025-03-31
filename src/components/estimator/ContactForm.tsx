@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ContactInfo } from '@/types/estimator';
@@ -97,19 +97,20 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
     return Object.keys(newErrors).length === 0;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Add form validation to the parent component
     const originalNextStep = window.handleNextStep;
     
-    if (typeof originalNextStep === 'function') {
-      window.handleNextStep = () => {
-        if (validateAllFields()) {
+    // Expose validation function to window for the parent component
+    window.handleNextStep = () => {
+      if (validateAllFields()) {
+        if (typeof originalNextStep === 'function') {
           originalNextStep();
-        } else {
-          toast.error("Please correct the errors in the form");
         }
-      };
-    }
+      } else {
+        toast.error("Please correct the errors in the form");
+      }
+    };
     
     return () => {
       window.handleNextStep = originalNextStep;

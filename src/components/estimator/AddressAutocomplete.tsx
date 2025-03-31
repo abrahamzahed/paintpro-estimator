@@ -61,6 +61,7 @@ const AddressAutocomplete = ({
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -71,7 +72,13 @@ const AddressAutocomplete = ({
       }
     }, 500);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      // Cancel any ongoing requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [query]);
 
   useEffect(() => {
@@ -94,20 +101,30 @@ const AddressAutocomplete = ({
   const fetchSuggestions = async (input: string) => {
     if (input.trim().length < 3) return;
     
+    // Cancel any previous requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create a new AbortController
+    abortControllerRef.current = new AbortController();
+    
     setIsLoading(true);
     try {
       const response = await axios.get("https://nominatim.openstreetmap.org/search", {
         params: {
-          q: input + ", Washington, USA", // Append Washington state to query
+          q: input + ", Washington, USA",
           format: "json",
           addressdetails: 1,
           limit: 5,
-          countrycodes: "us", // Restrict to United States only
-          state: "washington" // Restrict to Washington state
+          countrycodes: "us",
+          state: "washington"
         },
         headers: {
           "User-Agent": "PaintPro Web Application",
+          "Accept-Language": "en-US,en;q=0.9"
         },
+        signal: abortControllerRef.current.signal
       });
       
       // Filter results to only include addresses in Washington state
@@ -117,6 +134,12 @@ const AddressAutocomplete = ({
       
       setSuggestions(waResults);
     } catch (error) {
+      // Don't show error for aborted requests
+      if (axios.isCancel(error)) {
+        console.log('Request canceled:', error.message);
+        return;
+      }
+      
       console.error("Error fetching address suggestions:", error);
       toast({
         title: "Error fetching addresses",
@@ -141,8 +164,6 @@ const AddressAutocomplete = ({
     if (address.house_number) parts.push(address.house_number);
     if (address.road) parts.push(address.road);
     
-    // Skip neighborhood/suburb
-    
     if (address.city) parts.push(address.city);
     
     if (address.state) parts.push(address.state);
@@ -158,6 +179,12 @@ const AddressAutocomplete = ({
     onChange(selectedAddress);
     setSuggestions([]);
     setIsFocused(false);
+  };
+
+  const handleRetry = () => {
+    if (query.length >= 3) {
+      fetchSuggestions(query);
+    }
   };
 
   return (
