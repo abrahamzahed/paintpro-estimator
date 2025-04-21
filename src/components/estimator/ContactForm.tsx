@@ -24,7 +24,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
         label="Project Name"
         value={contactInfo.projectName}
         onChange={handleChange}
-        placeholder="Enter your project name"
+        placeholder="Choose a name for your project"
         error={errors.projectName}
       />
 
@@ -57,7 +57,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contactInfo, setContac
         type="email"
         value={contactInfo.email}
         onChange={handleChange}
-        placeholder="Enter your email address"
+        placeholder="Enter your email address for your estimate"
         error={errors.email}
       />
 
