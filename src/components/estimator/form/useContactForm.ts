@@ -67,20 +67,22 @@ export const useContactForm = (
   };
 
   useEffect(() => {
-    // Add form validation to the parent component
-    const originalNextStep = window.handleNextStep;
-    
-    // Expose validation function to window for the parent component
+    // Set up the validation function for the parent component to use
     window.handleNextStep = () => {
-      if (validateForm()) {
-        if (typeof originalNextStep === 'function') {
-          originalNextStep();
-        }
+      console.log('Contact form validation triggered');
+      const isValid = validateForm();
+      console.log('Validation result:', isValid);
+      
+      if (isValid) {
+        // Call the original next step handler from the estimator
+        const event = new CustomEvent('contactFormValid');
+        window.dispatchEvent(event);
       }
     };
     
+    // Cleanup function
     return () => {
-      window.handleNextStep = originalNextStep;
+      window.handleNextStep = undefined;
     };
   }, [contactInfo]);
 
@@ -88,6 +90,7 @@ export const useContactForm = (
     errors,
     handleChange,
     handleAddressChange,
-    handlePhoneChange
+    handlePhoneChange,
+    validateForm
   };
 };

@@ -87,6 +87,23 @@ export const useEstimatorHook = () => {
     }
   }, [rooms, contactInfo, pricingData]);
 
+  // Listen for contact form validation success
+  useEffect(() => {
+    const handleContactFormValid = () => {
+      console.log('Contact form validation passed, proceeding to next step');
+      // Proceed with the actual next step logic
+      saveEstimatorDataToStorage(rooms, contactInfo);
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+    };
+
+    window.addEventListener('contactFormValid', handleContactFormValid);
+    
+    return () => {
+      window.removeEventListener('contactFormValid', handleContactFormValid);
+    };
+  }, [currentStep, rooms, contactInfo]);
+
   const roomManagement = useRoomManagement({
     rooms,
     setRooms,
@@ -115,23 +132,30 @@ export const useEstimatorHook = () => {
   };
 
   const handleNextStep = () => {
-    if (window.handleNextStep) {
-      window.handleNextStep();
-      return;
-    }
+    console.log('handleNextStep called, current step:', currentStep);
     
     if (currentStep === 1) {
-      const validation = validateContactInfo(
-        contactInfo.fullName,
-        contactInfo.email,
-        contactInfo.phone,
-        contactInfo.address,
-        contactInfo.projectName
-      );
-      
-      if (!validation.isValid && validation.errorMessage) {
-        toast.error(validation.errorMessage);
+      // For step 1, the validation is handled by the contact form
+      // The window.handleNextStep will be set by useContactForm
+      if (window.handleNextStep) {
+        console.log('Calling contact form validation');
+        window.handleNextStep();
         return;
+      } else {
+        console.log('No contact form validation found, using fallback');
+        // Fallback validation
+        const validation = validateContactInfo(
+          contactInfo.fullName,
+          contactInfo.email,
+          contactInfo.phone,
+          contactInfo.address,
+          contactInfo.projectName
+        );
+        
+        if (!validation.isValid && validation.errorMessage) {
+          toast.error(validation.errorMessage);
+          return;
+        }
       }
     } else if (currentStep === 2) {
       const validation = validateRooms(rooms.length);
